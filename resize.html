@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resizable Table Columns</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/resizable-columns/1.0.1/resizableColumns.css">
+</head>
+<body>
+
+<table id="resizable-table" class="resizable">
+    <thead>
+        <tr>
+            <th>Column 1</th>
+            <th>Column 2</th>
+            <th>Column 3</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Row 1, Cell 1</td>
+            <td>Row 1, Cell 2</td>
+            <td>Row 1, Cell 3</td>
+        </tr>
+        <tr>
+            <td>Row 2, Cell 1</td>
+            <td>Row 2, Cell 2</td>
+            <td>Row 2, Cell 3</td>
+        </tr>
+        <!-- Add more rows as needed -->
+    </tbody>
+</table>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/resizable-columns/1.0.1/resizableColumns.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('resizable-table');
+        const resizableTable = new ResizableColumns(table);
+    });
+</script>
+
+</body>
+</html>
