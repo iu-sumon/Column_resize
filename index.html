@@ -160,12 +160,76 @@
         background-color: #80808033;
         border-radius: 4px;
       }
+
+      th {
+          cursor: pointer;
+      }
+      th.sort-asc::after {
+          content: " ▲";
+      }
+      th.sort-desc::after {
+          content: " ▼";
+      }
+
+
+.sorting-custom-dropdown {
+  position: relative;
+  width: 130px;
+}
+
+.sorting-selected-option {
+    border: 1px solid #97a6b36b;
+    padding: 3px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.sorting-options {
+  display: none;
+  position: absolute;
+  background-color: var(--select-bg-menu);
+  border: 1px solid #3d3c3c;
+  max-height: 100px;
+  width: 100%;
+  overflow-y: auto;
+  z-index: 999;
+}
+
+.sorting-option {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.sorting-option:hover {
+  background-color: #adadad;;
+}
+
+.sorting-show
+{
+  display: block;
+}
     </style>
   </head>
   <body>
-    <div onclick="add_new_row()" class="d-flex justify-content-center">
-      <button class="btn btn-info mt-1 mb-1">Add Row</button>
+    <div class="d-flex justify-content-center">
+    <div>  <button onclick="add_new_row()"  class="btn btn-info mt-1 mb-1">Add Row</button></div>
+
+   <div class="ml-5">
+    <div class="sorting-custom-dropdown">
+      <div id="dropdown_wl_table_1" class="sorting-selected-option d-flex justify-content-around align-items-center" onclick="toggleDropdown(this.id)">
+        <span id="selected_val_wl_table_1" class="text-muted">Auto Sorting</span>  
+        <span><i class="fa fa-caret-down pl-2"></i></span> 
+      </div>
+
+      <div  id="sorting_dropdown_wl_table_1" class="sorting-options">
+        <div id="sorting_wl_table_1" class="sorting-option" onclick="changeSorting('OFF', this.id)">OFF</div>
+        <div id="sorting_wl_table_1" class="sorting-option" onclick="changeSorting('CHG', this.id)">CHG <i class="fa fa-sort-amount-desc"></i></div>
+        <div id="sorting_wl_table_1" class="sorting-option" onclick="changeSorting('%CHG', this.id)">%CHG <i class="fa fa-sort-amount-desc"></i></div>
+      </div>
     </div>
+   </div>
+    </div>
+    
     <div>
       <table
         class="watchlist_table table table-dark table-striped"
@@ -175,128 +239,27 @@
         cellpadding="0"
         cellspacing="0"
         style="font-size: 0.8rem; font-weight: 500"
-        data-sortable-initialized="true"
+       
       >
         <thead style="position: sticky; top: 0px; background-color: #323131">
           <tr>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-1 table-bordered sortme"
-              data-sorted="false"
-            >
-              -
-            </th>
-            <th
-              style="
-                text-align: left !important;
-                padding-left: 5px !important;
-                display: table-cell;
-              "
-              class="wl_table_1-col-2 table-bordered sortme"
-              data-sorted="false"
-            >
-              Symbol
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-3 table-bordered sortme"
-              data-sorted="false"
-            >
-              Group
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-4 table-bordered sortme"
-              data-sorted="true"
-              data-sorted-direction="ascending"
-            >
-              LTP
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-5 table-bordered sortme"
-              data-sorted="false"
-            >
-              CP
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-6 table-bordered sortme"
-              data-sorted="false"
-            >
-              BQ
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-7 table-bordered sortme"
-              data-sorted="false"
-            >
-              BID
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-8 table-bordered sortme"
-              data-sorted="false"
-            >
-              ASK
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-9 table-bordered sortme"
-              data-sorted="false"
-            >
-              AQ
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-10 table-bordered sortme"
-              data-sorted="false"
-            >
-              HIGH
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-11 table-bordered sortme"
-              data-sorted="false"
-            >
-              LOW
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-12 table-bordered sortme"
-              data-sorted="false"
-            >
-              VOL
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-13 table-bordered sortme"
-              data-sorted="false"
-            >
-              YCP
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-14 table-bordered sortme"
-              data-sorted="false"
-            >
-              YVOL
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-15 table-bordered sortme"
-              data-sorted="false"
-            >
-              CHG
-            </th>
-            <th
-              style="text-align: center !important"
-              class="wl_table_1-col-16 table-bordered sortme"
-              data-sorted="false"
-            >
-              %CHG
-            </th>
-          </tr>
+            <th style="text-align: center !important" class="wl_table_1-col-1 table-bordered sortme">-</th>
+            <th style="text-align: left !important; padding-left: 5px !important" class="wl_table_1-col-2 table-bordered sortme">Symbol</th>
+            <th style="text-align: center !important" class="wl_table_1-col-3 table-bordered sortme">Group</th>
+            <th style="text-align: center !important" class="wl_table_1-col-4 table-bordered sortme">LTP</th>
+            <th style="text-align: center !important" class="wl_table_1-col-5 table-bordered sortme">CP</th>
+            <th style="text-align: center !important" class="wl_table_1-col-6 table-bordered sortme">BQ</th>
+            <th style="text-align: center !important" class="wl_table_1-col-7 table-bordered sortme">BID</th>
+            <th style="text-align: center !important" class="wl_table_1-col-8 table-bordered sortme">ASK</th>
+            <th style="text-align: center !important" class="wl_table_1-col-9 table-bordered sortme">AQ</th>
+            <th style="text-align: center !important" class="wl_table_1-col-10 table-bordered sortme">HIGH</th>
+            <th style="text-align: center !important" class="wl_table_1-col-11 table-bordered sortme">LOW</th>
+            <th style="text-align: center !important" class="wl_table_1-col-12 table-bordered sortme">VOL</th>
+            <th style="text-align: center !important" class="wl_table_1-col-13 table-bordered sortme">YCP</th>
+            <th style="text-align: center !important" class="wl_table_1-col-14 table-bordered sortme">YVOL</th>
+            <th style="text-align: center !important" class="wl_table_1-col-15 table-bordered sortme">CHG</th>
+            <th style="text-align: center !important" class="wl_table_1-col-16 table-bordered sortme">%CHG</th>
+        </tr>
         </thead>
         <tbody class="ui-sortable">
           <tr
@@ -332,7 +295,7 @@
               <div class="UNIONCAPPUBLIC_ltp neutral tab-border-left">10.4</div>
             </td>
             <td class="wl_table_1-col-5">
-              <div class="UNIONCAPPUBLIC_close tab-border-left">-</div>
+              <div class="UNIONCAPPUBLIC_close tab-border-left">-12</div>
             </td>
             <td class="wl_table_1-col-6">
               <div class="UNIONCAPPUBLIC_bidq tab-border-left">-</div>
@@ -359,7 +322,7 @@
               <div class="UNIONCAPPUBLIC_ycp tab-border-left">10.4</div>
             </td>
             <td class="wl_table_1-col-14">
-              <div class="UNIONCAPPUBLIC_yvol tab-border-left">320</div>
+              <div class="UNIONCAPPUBLIC_yvol tab-border-left">-320</div>
             </td>
             <td class="wl_table_1-col-15">
               <div class="UNIONCAPPUBLIC_chg neutral tab-border-left">0.00</div>
@@ -430,19 +393,19 @@
               <div class="EMERALDOILPUBLIC_vol tab-border-left">-</div>
             </td>
             <td class="wl_table_1-col-13">
-              <div class="EMERALDOILPUBLIC_ycp tab-border-left">15</div>
+              <div class="EMERALDOILPUBLIC_ycp tab-border-left">-15</div>
             </td>
             <td class="wl_table_1-col-14">
-              <div class="EMERALDOILPUBLIC_yvol tab-border-left">899</div>
+              <div class="EMERALDOILPUBLIC_yvol tab-border-left">-899</div>
             </td>
             <td class="wl_table_1-col-15">
               <div class="EMERALDOILPUBLIC_chg neutral tab-border-left">
-                0.00
+                100
               </div>
             </td>
             <td class="wl_table_1-col-16">
               <div class="EMERALDOILPUBLIC_chgper neutral tab-border-left">
-                0.00%
+                -12.00%
               </div>
             </td>
           </tr>
@@ -484,7 +447,7 @@
               </div>
             </td>
             <td class="wl_table_1-col-5">
-              <div class="MONNOFABRPUBLIC_close tab-border-left">-</div>
+              <div class="MONNOFABRPUBLIC_close tab-border-left">+15</div>
             </td>
             <td class="wl_table_1-col-6">
               <div class="MONNOFABRPUBLIC_bidq tab-border-left">-</div>
@@ -508,1028 +471,25 @@
               <div class="MONNOFABRPUBLIC_vol tab-border-left">-</div>
             </td>
             <td class="wl_table_1-col-13">
-              <div class="MONNOFABRPUBLIC_ycp tab-border-left">17.9</div>
+              <div class="MONNOFABRPUBLIC_ycp tab-border-left">-17.9</div>
             </td>
             <td class="wl_table_1-col-14">
               <div class="MONNOFABRPUBLIC_yvol tab-border-left">1</div>
             </td>
             <td class="wl_table_1-col-15">
               <div class="MONNOFABRPUBLIC_chg neutral tab-border-left">
-                0.00
+                +1.00
               </div>
             </td>
             <td class="wl_table_1-col-16">
               <div class="MONNOFABRPUBLIC_chgper neutral tab-border-left">
-                0.00%
+                -1.00%
               </div>
             </td>
           </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="OAL.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div data-symbol="OAL.PUBLIC" class="tab-border-left td-btn">
-                <button
-                  onclick="remove_from_watchlist('OAL.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div align="left" data-symbol="OAL.PUBLIC" class="ticker_name">
-                OAL
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">B</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="OALPUBLIC_ltp neutral tab-border-left">22.5</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="OALPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="OALPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="OALPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="OALPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="OALPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="OALPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="OALPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="OALPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="OALPUBLIC_ycp tab-border-left">22.5</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="OALPUBLIC_yvol tab-border-left">24,060</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="OALPUBLIC_chg neutral tab-border-left">0.00</div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="OALPUBLIC_chgper neutral tab-border-left">0.00%</div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="NAVANAPHAR.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div
-                data-symbol="NAVANAPHAR.PUBLIC"
-                class="tab-border-left td-btn"
-              >
-                <button
-                  onclick="remove_from_watchlist('NAVANAPHAR.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="NAVANAPHAR.PUBLIC"
-                class="ticker_name"
-              >
-                NAVANAPHAR
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">N</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="NAVANAPHARPUBLIC_ltp neutral tab-border-left">
-                29.3
-              </div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="NAVANAPHARPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="NAVANAPHARPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="NAVANAPHARPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="NAVANAPHARPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="NAVANAPHARPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="NAVANAPHARPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="NAVANAPHARPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="NAVANAPHARPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="NAVANAPHARPUBLIC_ycp tab-border-left">29.3</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="NAVANAPHARPUBLIC_yvol tab-border-left">1,560</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="NAVANAPHARPUBLIC_chg neutral tab-border-left">
-                0.00
-              </div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="NAVANAPHARPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="INTRACO.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div data-symbol="INTRACO.PUBLIC" class="tab-border-left td-btn">
-                <button
-                  onclick="remove_from_watchlist('INTRACO.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="INTRACO.PUBLIC"
-                class="ticker_name"
-              >
-                INTRACO
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">A</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="INTRACOPUBLIC_ltp neutral tab-border-left">49.2</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="INTRACOPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="INTRACOPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="INTRACOPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="INTRACOPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="INTRACOPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="INTRACOPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="INTRACOPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="INTRACOPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="INTRACOPUBLIC_ycp tab-border-left">49.2</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="INTRACOPUBLIC_yvol tab-border-left">270</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="INTRACOPUBLIC_chg neutral tab-border-left">0.00</div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="INTRACOPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="MONOSPOOL.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div
-                data-symbol="MONOSPOOL.PUBLIC"
-                class="tab-border-left td-btn"
-              >
-                <button
-                  onclick="remove_from_watchlist('MONOSPOOL.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="MONOSPOOL.PUBLIC"
-                class="ticker_name"
-              >
-                MONOSPOOL
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">Z</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="MONOSPOOLPUBLIC_ltp neutral tab-border-left">57</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="MONOSPOOLPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="MONOSPOOLPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="MONOSPOOLPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="MONOSPOOLPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="MONOSPOOLPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="MONOSPOOLPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="MONOSPOOLPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="MONOSPOOLPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="MONOSPOOLPUBLIC_ycp tab-border-left">57</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="MONOSPOOLPUBLIC_yvol tab-border-left">3,000</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="MONOSPOOLPUBLIC_chg neutral tab-border-left">
-                0.00
-              </div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="MONOSPOOLPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="LEGACYFOOT.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div
-                data-symbol="LEGACYFOOT.PUBLIC"
-                class="tab-border-left td-btn"
-              >
-                <button
-                  onclick="remove_from_watchlist('LEGACYFOOT.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="LEGACYFOOT.PUBLIC"
-                class="ticker_name"
-              >
-                LEGACYFOOT
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">B</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="LEGACYFOOTPUBLIC_ltp neutral tab-border-left">67</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="LEGACYFOOTPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="LEGACYFOOTPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="LEGACYFOOTPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="LEGACYFOOTPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="LEGACYFOOTPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="LEGACYFOOTPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="LEGACYFOOTPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="LEGACYFOOTPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="LEGACYFOOTPUBLIC_ycp tab-border-left">67</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="LEGACYFOOTPUBLIC_yvol tab-border-left">20</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="LEGACYFOOTPUBLIC_chg neutral tab-border-left">
-                0.00
-              </div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="LEGACYFOOTPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="UNIQUEHRL.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div
-                data-symbol="UNIQUEHRL.PUBLIC"
-                class="tab-border-left td-btn"
-              >
-                <button
-                  onclick="remove_from_watchlist('UNIQUEHRL.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="UNIQUEHRL.PUBLIC"
-                class="ticker_name"
-              >
-                UNIQUEHRL
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">A</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="UNIQUEHRLPUBLIC_ltp neutral tab-border-left">
-                73.5
-              </div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="UNIQUEHRLPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="UNIQUEHRLPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="UNIQUEHRLPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="UNIQUEHRLPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="UNIQUEHRLPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="UNIQUEHRLPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="UNIQUEHRLPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="UNIQUEHRLPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="UNIQUEHRLPUBLIC_ycp tab-border-left">73.5</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="UNIQUEHRLPUBLIC_yvol tab-border-left">2</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="UNIQUEHRLPUBLIC_chg neutral tab-border-left">
-                0.00
-              </div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="UNIQUEHRLPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="TITASGAS.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div data-symbol="TITASGAS.PUBLIC" class="tab-border-left td-btn">
-                <button
-                  onclick="remove_from_watchlist('TITASGAS.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="TITASGAS.PUBLIC"
-                class="ticker_name"
-              >
-                TITASGAS
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">A</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="TITASGASPUBLIC_ltp neutral tab-border-left">92.7</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="TITASGASPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="TITASGASPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="TITASGASPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="TITASGASPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="TITASGASPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="TITASGASPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="TITASGASPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="TITASGASPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="TITASGASPUBLIC_ycp tab-border-left">92.7</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="TITASGASPUBLIC_yvol tab-border-left">3,932</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="TITASGASPUBLIC_chg neutral tab-border-left">0.00</div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="TITASGASPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="PTL.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div data-symbol="PTL.PUBLIC" class="tab-border-left td-btn">
-                <button
-                  onclick="remove_from_watchlist('PTL.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div align="left" data-symbol="PTL.PUBLIC" class="ticker_name">
-                PTL
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">A</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="PTLPUBLIC_ltp neutral tab-border-left">348.6</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="PTLPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="PTLPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="PTLPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="PTLPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="PTLPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="PTLPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="PTLPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="PTLPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="PTLPUBLIC_ycp tab-border-left">348.6</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="PTLPUBLIC_yvol tab-border-left">2,354</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="PTLPUBLIC_chg neutral tab-border-left">0.00</div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="PTLPUBLIC_chgper neutral tab-border-left">0.00%</div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="SONALIANSH.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div
-                data-symbol="SONALIANSH.PUBLIC"
-                class="tab-border-left td-btn"
-              >
-                <button
-                  onclick="remove_from_watchlist('SONALIANSH.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="SONALIANSH.PUBLIC"
-                class="ticker_name"
-              >
-                SONALIANSH
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">A</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="SONALIANSHPUBLIC_ltp neutral tab-border-left">
-                647.8
-              </div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="SONALIANSHPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="SONALIANSHPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="SONALIANSHPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="SONALIANSHPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="SONALIANSHPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="SONALIANSHPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="SONALIANSHPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="SONALIANSHPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="SONALIANSHPUBLIC_ycp tab-border-left">647.8</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="SONALIANSHPUBLIC_yvol tab-border-left">5,008</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="SONALIANSHPUBLIC_chg neutral tab-border-left">
-                0.00
-              </div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="SONALIANSHPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="BEXIMCO.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div data-symbol="BEXIMCO.PUBLIC" class="tab-border-left td-btn">
-                <button
-                  onclick="remove_from_watchlist('BEXIMCO.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div
-                align="left"
-                data-symbol="BEXIMCO.PUBLIC"
-                class="ticker_name"
-              >
-                BEXIMCO
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">B</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="BEXIMCOPUBLIC_ltp neutral tab-border-left">
-                1112.6
-              </div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="BEXIMCOPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="BEXIMCOPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="BEXIMCOPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="BEXIMCOPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="BEXIMCOPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="BEXIMCOPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="BEXIMCOPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="BEXIMCOPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="BEXIMCOPUBLIC_ycp tab-border-left">1112.6</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="BEXIMCOPUBLIC_yvol tab-border-left">350</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="BEXIMCOPUBLIC_chg neutral tab-border-left">0.00</div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="BEXIMCOPUBLIC_chgper neutral tab-border-left">
-                0.00%
-              </div>
-            </td>
-          </tr>
-          <tr
-            class="watchlist_ticker ui-sortable-handle"
-            onclick="watchlist_link(this)"
-            data-id="ACI.PUBLIC"
-            style="text-align: center"
-          >
-            <td class="wl_table_1-col-1">
-              <div data-symbol="ACI.PUBLIC" class="tab-border-left td-btn">
-                <button
-                  onclick="remove_from_watchlist('ACI.PUBLIC', 'wl_table_1')"
-                  class="wlremove has-tooltip"
-                  title="Remove Stock"
-                >
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </td>
-            <td class="wl_table_1-col-2" style="display: table-cell">
-              <div align="left" data-symbol="ACI.PUBLIC" class="ticker_name">
-                ACI
-              </div>
-            </td>
-            <td class="wl_table_1-col-3">
-              <div class="tab-border-left">A</div>
-            </td>
-            <td class="wl_table_1-col-4">
-              <div class="ACIPUBLIC_ltp neutral tab-border-left">4000</div>
-            </td>
-            <td class="wl_table_1-col-5">
-              <div class="ACIPUBLIC_close tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-6">
-              <div class="ACIPUBLIC_bidq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-7">
-              <div class="ACIPUBLIC_bid tab-border-left up">-</div>
-            </td>
-            <td class="wl_table_1-col-8">
-              <div class="ACIPUBLIC_ask tab-border-left down">-</div>
-            </td>
-            <td class="wl_table_1-col-9">
-              <div class="ACIPUBLIC_askq tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-10">
-              <div class="ACIPUBLIC_high tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-11">
-              <div class="ACIPUBLIC_low tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-12">
-              <div class="ACIPUBLIC_vol tab-border-left">-</div>
-            </td>
-            <td class="wl_table_1-col-13">
-              <div class="ACIPUBLIC_ycp tab-border-left">4000</div>
-            </td>
-            <td class="wl_table_1-col-14">
-              <div class="ACIPUBLIC_yvol tab-border-left">10</div>
-            </td>
-            <td class="wl_table_1-col-15">
-              <div class="ACIPUBLIC_chg neutral tab-border-left">0.00</div>
-            </td>
-            <td class="wl_table_1-col-16">
-              <div class="ACIPUBLIC_chgper neutral tab-border-left">0.00%</div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <table
-        data-sortable=""
-        id="market_table"
-        class="protected order_table table-dark table-striped"
-        data-sortable-initialized="true"
-        style="font-size: 0.8rem; font-weight: 500"
-      >
-        <thead style="position: sticky; top: 38px">
-          <tr>
-            <th class="market_table-col-1" style="display: none">#</th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-2"
-            >
-              XCG
-            </th>
-            <th
-              style="text-align: left !important; display: none"
-              class="market_table-col-3"
-            >
-              Order ID
-            </th>
-            <th
-              style="text-align: center !important; display: none"
-              class="market_table-col-4"
-            >
-              Exec Time
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-5"
-            >
-              Client Code
-            </th>
-            <th style="text-align: left !important" class="market_table-col-6">
-              Symbol
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-7"
-            >
-              Board
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-8"
-            >
-              Side
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-9"
-            >
-              Order Type
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-10"
-            >
-              Price
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-11"
-            >
-              Avg Price
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-12"
-            >
-              Qty
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-13"
-            >
-              Drib
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-14"
-            >
-              Due Qty
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-15"
-            >
-              Exec Qty
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-16"
-            >
-              <span id="all-check-mpark" style="display: none"
-                ><input class="all-check-mpark" type="checkbox"
-              /></span>
-              Order Status
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-17"
-            >
-              Order Progress
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-18"
-            >
-              Dealer ID
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-19"
-            >
-              User ID
-            </th>
-            <th
-              style="text-align: center !important"
-              class="market_table-col-20"
-            ></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            id="y5MuPgP"
-            data-code="49732"
-            data-symbol="ASIAINS.PUBLIC"
-            style="text-align: center"
-            class="orderlink tab-border-bottom m-order-element"
-          >
-            <td class="td-sno market_table-col-1" style="display: none"></td>
-            <td class="market_table-col-2">DSE</td>
-            <td class="text-left market_table-col-3" style="display: none">
-              y5MuPgP
-            </td>
-            <td class="text-center market_table-col-4" style="display: none">
-              09:45:19
-            </td>
-            <td class="market_table-col-5">49732</td>
-            <td class="text-left market_table-col-6">ASIAINS</td>
-            <td class="text-center market_table-col-7">PUBLIC</td>
-            <td class="text-success market_table-col-8">BUY</td>
-            <td class="market_table-col-9">Limit</td>
-            <td class="market_table-col-10">48.6</td>
-            <td class="market_table-col-11"></td>
-            <td class="market_table-col-12">20</td>
-            <td class="market_table-col-13"></td>
-            <td class="market_table-col-14">20</td>
-            <td class="market_table-col-15">
-              <div
-                style="display: none"
-                data-orderstat="m-parking"
-                value=""
-                class="client-order-status"
-              ></div>
-            </td>
-            <td class="text-info market_table-col-16">
-              <span
-                ><input class="m-check" type="checkbox" />&nbsp;m-parking</span
-              >
-            </td>
-            <td class="market_table-col-17">
-              <div
-                class="progress"
-                style="
-                  border-radius: 10px;
-                  height: 0.8rem;
-                  background-color: #8e9291;
-                "
-              >
-                <div
-                  class="progress-bar"
-                  role="progressbar"
-                  style="
-                    width: 0%;
-                    background-color: #00db86;
-                    color: #000;
-                    font-size: 10px;
-                    font-weight: bold;
-                  "
-                  aria-valuenow="0"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                >
-                  0.00%
-                </div>
-              </div>
-            </td>
-            <td class="market_table-col-18">UFTTRDR051</td>
-            <td class="market_table-col-19">49732</td>
-            <td class="td-btn">
-              <div
-                style="display: none"
-                data-orderid="y5MuPgP"
-                value=""
-                class="client-order-id"
-              ></div>
-              <div
-                style="display: none"
-                data-orderchainid="y5MuPgP"
-                value=""
-                class="order-chain-id"
-              ></div>
-            </td>
-          </tr>
+          
+          
+          
         </tbody>
       </table>
     </div>

@@ -1,6 +1,9 @@
+var system_username ='sumon';
+var profile_page = 'trade_page';
+var pid = 2;
+
 $(document).ready(function() {
   tableStateLoad()
-  Sortable.initTable(document.querySelector('#wl_table_1'));
   var order_table_id = 'wl_table_1';
 
   function moveColumn(table, sourceIndex, targetIndex) {
@@ -54,18 +57,138 @@ $(document).ready(function() {
       }
   })
 
-  $("#" + order_table_id).resizableColumns({
-    store: window.store,
-    minWidth: 3
-    // resize: onResize
+
+  $('#wl_table_1 thead').on('click', 'th', function() {
+    const th = $(this);
+    const className = th.attr('class').split(' ').find(cls => cls.startsWith('wl_table_1-col-'));
+    if (className) {
+        sortTable(className);
+    }
 });
 
-// Bind to the mouseup event on resizable columns
-$("#" + order_table_id + ' th').on('mouseup', function () {
-    tableStateSave(order_table_id);
-});
+    function sortTable(className) {
+        const table = $('#wl_table_1');
+        let switching = true;
+            let shouldSwitch;
+            let dir = "asc";
+            let switchcount = 0;
+            let i;
+
+        while (switching) {
+            switching = false;
+            const rows = table.find('tbody tr');
+
+            for (i = 0; i < rows.length - 1; i++) {
+                shouldSwitch = false;
+                const x = $(rows[i]).find(`.${className} div`).text().trim();
+                const y = $(rows[i + 1]).find(`.${className} div`).text().trim();
+                
+            // Convert to numbers if possible, treat '-' as a very small value
+            const numX = x === '-' ? -Infinity : parseFloat(x.replace(/,/g, ''));
+            const numY = y === '-' ? -Infinity : parseFloat(y.replace(/,/g, ''));
+
+                if (!isNaN(numX) && !isNaN(numY)) { // Both values are numbers
+                    if (dir === "asc") {
+                        if (numX > numY) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir === "desc") {
+                        if (numX < numY) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                } else { // Non-numeric comparison as fallback
+                    if (dir === "asc") {
+                        if (x.toLowerCase() > y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir === "desc") {
+                        if (x.toLowerCase() < y.toLowerCase()) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (shouldSwitch) {
+                $(rows[i]).insertAfter($(rows[i + 1]));
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount === 0 && dir === "asc") {
+                    dir = "desc";
+                    switching = true;
+                }
+            }
+        }
+
+        // Update the sorting indicators
+        table.find('th').removeClass('sort-asc sort-desc');
+        const sortedHeader = table.find(`th.${className}`);
+        if (sortedHeader.length) {
+            sortedHeader.addClass(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
+    }
 
 })
+
+
+ 
+function selectOption() { 
+    $('.watchlist_table').each(function() { 
+        let exist_table_id = $(this).attr('id'); 
+        let local_sorting_val = localStorage.getItem(system_username + '_layout_' + profile_page + '_' + pid + '_' + exist_table_id + '_sorting');
+        if (local_sorting_val) {
+            $('#selected_val_' + exist_table_id).text(local_sorting_val);
+            let old_headers = document.getElementById(exist_table_id).getElementsByTagName("th"); 
+            var th = Array.from(old_headers).find(header => header.innerHTML === local_sorting_val); 
+            if (th) { 
+                th.click(); // First click to ensure header is selected
+                // Check if the current sort direction is ascending, if so, click again to make it descending
+                if (!th.classList.contains('sort-desc')) {
+                    th.click();
+                }
+            }
+        } 
+    });
+} 
+
+selectOption()
+setInterval(selectOption, 10000)
+   
+function toggleDropdown(id) {
+    let dropdown_id = id.replace('dropdown_', '').replace('add_', '').replace(/\s+/g, ''); 
+    document.getElementById("sorting_dropdown_" + dropdown_id).classList.toggle("sorting-show");
+}
+  
+function changeSorting(sorting_val, elem_id) { 
+    let watchlist_id = elem_id.replace('sorting_', '').replace('add_', '').replace(/\s+/g, ''); 
+    if(sorting_val === 'OFF'){ 
+        $('#selected_val_' + watchlist_id).text(sorting_val);
+        localStorage.removeItem(system_username + '_layout_' + profile_page + '_' + pid + '_' + watchlist_id + '_sorting');
+    }
+    else{
+        $('#selected_val_' + watchlist_id).text(sorting_val);
+        localStorage.setItem(system_username + '_layout_' + profile_page + '_' + pid + '_' + watchlist_id + '_sorting', sorting_val);
+        let old_headers = document.getElementById(watchlist_id).getElementsByTagName("th"); 
+        console.log(old_headers)
+        var th = Array.from(old_headers).find(header => header.innerHTML === sorting_val); 
+        if (th) { 
+            th.click(); // First click to ensure header is selected
+            // Check if the current sort direction is ascending, if so, click again to make it descending
+            if (!th.classList.contains('sort-desc')) {
+                th.click();
+            } 
+        }
+    }
+    toggleDropdown(watchlist_id);
+}
+      
+ 
 
 //deepcode ignore FunctionDeclarationInBlock: <please specify a reason for ignoring this>
 function tableStateLoad() { 
