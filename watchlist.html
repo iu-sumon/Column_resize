@@ -1,0 +1,424 @@
+<style>
+    .watchlist_ticker.clicked {
+        border: 2px solid var(--nav-active-color);
+        background-color: var(--navbar-active-bg);
+    }
+   
+    .wlremove:hover{
+       color: rgb(0, 203, 230);
+    }
+    .wlremove{
+        background-color: rgb(255,255,255,0);
+        border: 0;
+        color: var(--font-muted);
+    }
+    .ticker_name{
+        background-color: inherit;
+        border: 0;
+        /* color: var(--font-color); */
+    }
+    .ticker_name:focus{
+        outline: 0;
+        line-height: 0.7rem;
+    }
+    .watchlist_table{
+        white-space: nowrap;
+        width: 100%;
+    }
+    .watchlist_dropdown .dropdown-item {
+        color: var(--font-muted);
+        background-color: var(--select-bg);
+        border: 1px solid  var(--gridstack-border);
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+    }
+    .watchlist_dropdown .dropdown-item:hover {
+        color:black;
+        background-color:var(--nav-active-color);
+    }
+    /*------------Dropdown Style----------- */
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: var(--dropdown-bg-color);
+        min-width: 100px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        border-radius: 5px;
+        padding: 5px;
+    }
+    .dropdown-zindex
+    {
+        z-index: 99999;
+    }
+    .dropdown-content a {
+        display: block;
+        padding: 5px 10px;
+        text-decoration: none;
+        color: #000;
+        cursor: pointer;
+    }
+    .dropdown-content a:hover {
+        background-color: #ddd;
+    }
+    .show-dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .column-checkbox {
+        margin: 5px;
+    }
+
+    .col-check-container
+    {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        padding: 4px;
+    }
+ 
+    .watchlist-drop
+    {
+        padding: 1px 10px 2px 10px;
+        color: var(--font-muted);
+        background-color: var(--select-bg-menu);
+        box-shadow: 0 0 black;
+        border: 1px solid #97a6b36b;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+    .web-col-dropdown-container
+    {
+        position: relative;
+        width: 109px;
+    }
+
+    .web-col-dropdown-watch
+   {
+        border: 1px solid #97a6b36b;
+        border-radius: 4px;
+        padding: 3px 4px 4px 2px;
+        background-color: var(--select-bg-menu);
+        color: var(--font-muted);
+        box-shadow: 0 0 black;
+        text-align: center;
+        font-size: 0.8rem;
+  }
+    .web-col-dropdown-sorting
+   {
+        border: 1px solid #97a6b36b;
+        border-radius: 4px;
+        /* padding: 2px 19px 3px 19px; */
+        background-color: var(--select-bg-menu);
+        color: var(--font-muted);
+        box-shadow: 0 0 black;
+        text-align: center;
+        font-size: 0.8rem;
+  }
+
+  .watch_bid_bg{
+    background-color: rgb(10 167 147 / 15%) !important;
+  }
+  
+  .watch_ask_bg{
+    background-color: rgb(232 93 93 / 15%) !important;
+
+  }
+
+  .ui-state-highlight {
+      background-color: rgba(126, 125, 123, 0.7) !important;  
+      border: 2px dotted #ccc;   
+      opacity: 1.5;
+  }
+
+  .dragging-shadow { 
+      box-shadow: 0px 1px 2px 2px rgba(148, 148, 147, 0.7);
+  }
+
+  /* .watchlist_table{
+     table-layout: fixed;
+  } */
+  .watchlist_table th{
+    cursor: pointer;
+  }
+  .watchlist_table th[data-sorted="asc"]::after {
+    content: " ▲";
+  }
+
+  .watchlist_table th[data-sorted="desc"]::after {
+      content: " ▼";
+  }
+
+  .watchlist_table th,
+  .watchlist_table td {
+    padding-left: var(--all-table-padding-left);
+    padding-right: var(--all-table-padding-right);
+  }
+  
+
+  .watchlist_table thead th:hover{
+      cursor: pointer;
+  }
+
+.sorting-custom-dropdown {
+  position: relative;
+  width: 100px;
+}
+
+.sorting-selected-option {
+    border: 1px solid #97a6b36b;
+    padding: 3px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.sorting-options {
+  display: none;
+  position: absolute;
+  background-color: var(--select-bg-menu);
+  border: 1px solid #3d3c3c;
+  max-height: 100px;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.sorting-option {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.sorting-option:hover {
+  background-color: #adadad;;
+}
+
+.sorting-show
+{
+  display: block;
+}
+
+</style>
+    <div style="position:sticky; z-index:10; top:0;" class="widget-menu widget-menu-front-size row p-2">
+      <div class="col-7 d-flex justify-content-start align-items-center">
+        <a class="watchlist-drop" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" title="Watchlist Options"><i class="fa fa-bars"></i></a>
+
+        <div class="dropdown-menu p-0 m-0">
+          <ul class="watchlist_dropdown p-0 m-0">
+            <li id="create_{{table_id}}" class="dropdown-item" onclick="create_watchlist(this.id)">Create Watchlist</li>
+            <li id="remove_{{table_id}}" class="dropdown-item" title="Remove Selected Watchlist" onclick="delete_watchlist(this.id)">Remove Selected Watchlist</li>
+            <!-- <li class="dropdown-item" onclick="watchlist_view('basic')">Watchlist Basic</li>
+            <li class="dropdown-item" onclick="watchlist_view('advanced')">Watchlist Advanced</li>
+            <li class="dropdown-item" onclick="watchlist_view('screener')">Watchlist Screener</li> -->
+          </ul>
+        </div>
+        <div class="ml-2">
+          <select id="select_{{table_id}}" onchange="load_watchlist(this.value, this.id)" class="user_watchlists custom-select-drop">
+            <option disabled value="List">List</option>
+            <!-- <option value="Favorite">Favorite</option> -->
+            <!-- <option disabled value="All instrument">All instrument</option> -->
+            <option value="BOND (Public)">BOND (Public)</option>
+            <option value="SC">SC</option>
+            <option value="ATB">ATB</option>
+            <option disabled value="BOND (Government)">BOND (Government)</option>
+            <option value="SPOT Mkt">SPOT Mkt</option>
+            <option value="BLOCK">BLOCK</option>
+            <option value="zcategory">Z Category</option>
+            {% for result in results %}
+            <option value="{{ result }}">{{ result }}</option>
+            {% endfor %}
+        </select>
+        </div>
+        <div class="ml-2">
+          <input id="add_{{table_id}}" placeholder="Add symbol" class="wl-symbol searchbox symbol_input ui-autocomplete-input" type="text" autocomplete="off">
+        </div>
+      </div> 
+      <div class="col-5 d-flex justify-content-end align-items-center">
+        <!-- <select id="sorting_{{table_id}}" onchange="change_watchlist_sorting(this.value, this.id)" class="user_watchlists custom-select-drop"> 
+          <option selected value="OFF">OFF</option>
+          <option value="CHG">CHG</option>
+          <option value="%CHG">%CHG</option>
+        </select> -->
+       
+        <div class="sorting-custom-dropdown" >
+          <div id="dropdown_{{table_id}}" class="sorting-selected-option d-flex justify-content-around align-items-center" onclick="toggleDropdown(this.id)">
+            <span id="selected_val_{{table_id}}" class="text-muted">Auto Sorting</span>  
+            <span><i class="fa fa-caret-down pl-2"></i></span> 
+          </div>
+
+          <div  id="sorting_dropdown_{{table_id}}" class="sorting-options">
+            <div id="sorting_{{table_id}}" class="sorting-option" onclick="changeSorting('OFF', this.id)">OFF</div>
+            <div id="sorting_{{table_id}}" class="sorting-option" onclick="changeSorting('LTP', this.id)">LTP <i class="fa fa-sort-amount-desc"></i></div>
+            <div id="sorting_{{table_id}}" class="sorting-option" onclick="changeSorting('CHG', this.id)">CHG <i class="fa fa-sort-amount-desc"></i></div>
+            <div id="sorting_{{table_id}}" class="sorting-option" onclick="changeSorting('%CHG', this.id)">%CHG <i class="fa fa-sort-amount-desc"></i></div>
+          </div>
+        </div>
+        
+        
+        <div class="web-col-dropdown-container ml-2">
+          <div class="show-dropdown">
+            <span class="web-col-dropdown-watch">Columns <i class="fa fa-columns" aria-hidden="true"></i></span>
+            <div class="dropdown-content dropdown-zindex" style="top:20px; right:14px;">
+  
+               <p hidden class="col-check-container" align="left">
+                  <input  type="checkbox"
+                      class="{{table_id}}-col-checkbox"
+                      data-col="{{table_id}}-col-ac"
+                      value="A"
+                      checked disabled/>
+                  <span class="pl-1">A</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                    class="{{table_id}}-col-checkbox"
+                    data-col="{{table_id}}-col-symbol"
+                    value="Symbol"
+                    checked/>
+                <span class="pl-1">Symbol</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                    class="{{table_id}}-col-checkbox"
+                    data-col="{{table_id}}-col-group"
+                    value="Group"
+                    checked/>
+                <span class="pl-1">Group</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input   type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-ltp"
+                value="LTP"
+                checked/>
+                <span class="pl-1">LTP</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-cp"
+                value="CP"
+                checked/>
+                <span class="pl-1">CP</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-bq"
+                value="BQ"
+                checked/>
+                <span class="pl-1">BQ</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-bid"
+                value="BID"
+                checked/>
+                <span class="pl-1">BID</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-ask"
+                value="ASK"
+                checked/>
+                <span class="pl-1">ASK</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-aq"
+                value="AQ"
+                checked/>
+                <span class="pl-1">AQ</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-high"
+                value="HIGH"
+                checked/>
+                <span class="pl-1">HIGH</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-low"
+                value="LOW"
+                checked/>
+                <span class="pl-1">LOW</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-vol"
+                value="VOL"
+                checked/>
+                <span class="pl-1">VOL</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-ycp"
+                value="YCP"
+                checked/>
+                <span class="pl-1">YCP</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-yvol"
+                value="YVOL"
+                checked/>
+                <span class="pl-1">YVOL</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-chg"
+                value="CHG"
+                checked/>
+                <span class="pl-1">CHG</span>
+              </p>
+              <p class="col-check-container" align="left">
+                <input  type="checkbox"
+                class="{{table_id}}-col-checkbox"
+                data-col="{{table_id}}-col-pchg"
+                value="CHGPER"
+                checked/>
+                <span class="pl-1">%CHG</span>
+              </p>
+            
+            </div> 
+          </div>
+          
+        </div>
+      </div>
+      
+    </div>
+    <div id="web-watchlist-container" class="protected tableFixHead-Portal-Page">
+        <table class="watchlist_table table-dark table-striped" id="{{table_id}}" width="100%"  border="0" cellpadding="0" cellspacing="0">
+            <thead style="position: sticky; top: 38px;">
+              <tr style="text-align: center !important;">
+                <th class="{{table_id}}-col-ac">-</th>
+                <th onclick="sortTable('{{table_id}}-col-symbol')" class="{{table_id}}-col-symbol text-left">Symbol</th>
+                <th onclick="sortTable('{{table_id}}-col-group')" class="{{table_id}}-col-group">Group</th>
+                <th onclick="sortTable('{{table_id}}-col-ltp')" class="{{table_id}}-col-ltp ui-sortable-handle">LTP</th>
+                <th onclick="sortTable('{{table_id}}-col-cp')" class="{{table_id}}-col-cp ui-sortable-handle">CP</th>
+                <th onclick="sortTable('{{table_id}}-col-bq')" class="{{table_id}}-col-bq ui-sortable-handle">BQ</th>
+                <th onclick="sortTable('{{table_id}}-col-bid')" class="{{table_id}}-col-bid ui-sortable-handle">BID</th>
+                <th onclick="sortTable('{{table_id}}-col-ask')" class="{{table_id}}-col-ask ui-sortable-handle">ASK</th>
+                <th onclick="sortTable('{{table_id}}-col-aq')" class="{{table_id}}-col-aq ui-sortable-handle">AQ</th>
+                <th onclick="sortTable('{{table_id}}-col-high')" class="{{table_id}}-col-high ui-sortable-handle">HIGH</th>
+                <th onclick="sortTable('{{table_id}}-col-low')" class="{{table_id}}-col-low ui-sortable-handle">LOW</th>
+                <th onclick="sortTable('{{table_id}}-col-vol')" class="{{table_id}}-col-vol ui-sortable-handle">VOL</th>
+                <th onclick="sortTable('{{table_id}}-col-ycp')" class="{{table_id}}-col-ycp ui-sortable-handle">YCP</th>
+                <th onclick="sortTable('{{table_id}}-col-yvol')" class="{{table_id}}-col-yvol ui-sortable-handle">YVOL</th>
+                <th onclick="sortTable('{{table_id}}-col-chg')" class="{{table_id}}-col-chg ui-sortable-handle">CHG</th>
+                <th onclick="sortTable('{{table_id}}-col-pchg')" class="{{table_id}}-col-pchg ui-sortable-handle">%CHG</th>
+              </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table> 
+    </div>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/page-js/widgets/web_watchlist.js') }}"></script>
