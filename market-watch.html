@@ -1,646 +1,161 @@
- 
-<style>
-    .wlsym:hover{
-        background-color: var(--table-hover-bg);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Topbar</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #333;
+}
+
+.topbar {
+    background-color: #1d1d1d;
+    color: white;
+    padding: 10px 20px;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00bcd4;
+}
+
+.market-watch {
+    color: #888;
+    margin-left: 10px;
+}
+
+.badge-warning {
+    background-color: #ffd700;
+    color: black;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.index-dropdown {
+    width: 100px;
+}
+
+.index-value {
+    font-size: 20px;
+}
+
+.index-change {
+    color: green;
+}
+
+.btn {
+    padding: 5px 10px;
+}
+
+.search-symbol {
+    width: 120px;
+}
+
+.total-volume, .total-trade {
+    font-size: 12px;
+}
+
+.trade-bar {
+    display: flex;
+    width: 100px;
+    height: 10px;
+}
+
+.trade-bar .bar {
+    width: 50%;
+}
+
+.green {
+    background-color: green;
+}
+
+.red {
+    background-color: red;
+}
+
+.dealer-info span {
+    font-size: 12px;
+}
+
+.alert-icon, .notification-icon, .settings-icon {
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.alert-icon {
+    color: red;
+}
+
+.notification-icon {
+    color: grey;
+}
+
+.settings-icon {
+    color: #888;
+}
+
+@media (max-width: 768px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
     }
-    
-    .wlsym{
-        border: 1px solid var(--tab-active-font-color);
+    .center-section, .right-section {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: 10px;
     }
-    .symbtn{
-        background-color: rgb(255,255,255,0);
-        border: 0;
-    }
-    .symbtn:focus{
-        outline: 0;
-        border: 1px solid var(--nav-active-color);
-        color: var(--nav-active-color);
-        line-height: 0.7rem;
-    }
-  
-    .data_table{
-        white-space: nowrap;
-        width: 100%;
-    }
-  
-    #filter_sector, #filter_category, #select_symbol_board_watch, #select_board
-    {
-      font-size: 0.8rem;
-      color: var(--font-muted);
-      background-color: var(--select-bg-menu);
-      box-shadow: 0 0 black;
-      border: 1px solid #97a6b36b;
-      border-radius: 4px; 
-    } 
-  
-    .mwatch_bid_bg{
-        background-color: rgb(10 167 147 / 15%) !important;
-      }
-    
-    .mwatch_ask_bg{
-      background-color: rgb(232 93 93 / 15%) !important;
-  
-    }
-  
-    .screener_table th,
-    .screener_table td
-    {
-      padding-left: var(--all-table-padding-left);
-      padding-right: var(--all-table-padding-right);
-    }
-    .ui-state-highlight {
-        background-color: rgba(126, 125, 123, 0.7) !important;  
-        border: 2px dotted #ccc;   
-        opacity: 1.5;
-    }
-    .mwatch_table_thead{
-      position: sticky;
-      top: 40px;
-      text-align: right;
-    }
-    .mwatch_table_th{
-      text-align: left !important;
-    }
-    .data_table th{
-      cursor: pointer;
-    }
-    #web-market-watch-container
-    {
-      padding: 0px 5px !important;
-    }
-  </style>
-  <div>
-    <div style="position:sticky; top:0; z-index: 10;" class="widget-menu widget-menu-front-size row p-2">
-      <div class="col-10 d-flex justify-content-start align-items-center">
-        <span id="screener_tabs" style="width: 100%;">
-          <input placeholder="Search Symbol" name="marketwatch_symbol"
-                id="marketwatch_symbol" class="d-inline col-1 p-0  searchbox symbol_input" type="text" />
-          <select id="select_board">
-              {% for board in board_list %}
-               <option value="{{ board }}">{{ 'MAIN' if board == 'PUBLIC' else board }}</option>
-              {% endfor %}
-          </select>
-          <select class="" id="filter_sector">
-            {% for sector in sector_list %}
-            <option value="{{ sector }}">{{ sector }}</option>
-            {% endfor %}
-          </select>
-          <select class="" id="filter_category">
-            {% for category in category_list %}
-            <option value="{{ category }}">{{ category }}</option>
-            {% endfor %}
-          </select>
-          <select class="" id="select_symbol_board_watch">
-              <option value="ALL" selected>ALL</option>
-              <option value="P">PUBLIC</option>
-              <option value="S">SPOT</option>
-          </select>
-          <button onclick="clear_order_market_watch_filter()" class="widget-btn-clear btn">Clear</button>
-          <button id="all_symbol_btn" value="ALL" class="widget-btn btn widget-btn-active screener_sort">ALL</button>
-          <button id="mutual_fund_btn" value="MF" class="widget-btn btn screener_sort">MUTUAL FUND</button>  
-          <button id="equity_btn" value="EQ" class="widget-btn btn screener_sort">EQUITY</button>  
-          <button id="t_bond_btn" value="TB"  class="widget-btn btn screener_sort">T. BOND</button>  
-          <button id="corp_bond_btn" value="CB"  class="widget-btn btn screener_sort">CORP. BOND</button> 
-          <button id="debenture_btn" value="DB" class="widget-btn btn screener_sort">DEBENTURE</button>
-          <button id="index_btn" value="IN" class="widget-btn btn screener_sort">INDEX</button>
-          <button id="block_btn" value="BLOCK" class="widget-btn btn screener_sort">BLOCK</button>
-          <button id="gsec_btn" value="YIELDDBT" class="widget-btn btn screener_sort">GSEC</button>
-      </span>
-      </div>
-      <div class="col-2 d-flex justify-content-end align-items-center">
-        <div class="widget-settings">
-          <i onclick="showSettings('Market watch')" class="fa fa-cog" aria-hidden="true"></i> 
-        </div> 
-      </div> 
-    </div>
-  
-    <div style="display: none">
-      <div id="mwatch_settings">
-            <div class="widget-settings-tabs" data-widget-id="market_watch">  
-               <button class="tablinks active" onclick="openTab(event, 'fontSize_mwatch')">Font Size</button> 
-               <button class="tablinks" onclick="openTab(event, 'columnShowHide_mwatch')">Columns</button>  
-            </div> 
-           <div id="fontSize_mwatch" class="mwatch-font-group widget-settings-tabcontent" style="display: block;">
-              <label class="custom-radio">
-                    <input type="radio" name="fontsize_mwatch" value="extra-large"> 
-                    <span class="custom-radio-mark"></span> X Large
-              </label>
-              <label class="custom-radio">
-                    <input type="radio" name="fontsize_mwatch" value="large"> 
-                    <span class="custom-radio-mark"></span> Large
-              </label>
-              <label class="custom-radio">
-                    <input type="radio" name="fontsize_mwatch" value="normal" checked> 
-                    <span class="custom-radio-mark"></span> Normal
-              </label>
-              <label class="custom-radio">
-                    <input type="radio" name="fontsize_mwatch" value="small"> 
-                    <span class="custom-radio-mark"></span> Small
-              </label>
-              <label class="custom-radio">
-                    <input type="radio" name="fontsize_mwatch" value="extra-small"> 
-                    <span class="custom-radio-mark"></span> X Small
-              </label> 
-              <label class="custom-radio">
-                    <input type="radio" name="fontsize_mwatch" value="xxs-small"> 
-                    <span class="custom-radio-mark"></span> XX Small
-              </label> 
-           </div> 
-           
-           <div id="columnShowHide_mwatch" class="widget-settings-tabcontent"> 
-            <div id="market_watch_screener_dropdown" class="grid-container"> 
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                    class="col-checkbox"
-                    data-col="mw_screener_symbol"
-                    value="Symbol"
-                    checked disabled />
-                  <span class="pl-1">Symbol</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input   type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_cn"
-                value="CompanyName"
-                checked/>
-                  <span class="pl-1">Com: Name</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_sector"
-                value="Sector"
-                checked/>
-                  <span class="pl-1">Sector</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_category"
-                value="Category"
-                checked/>
-                  <span class="pl-1">Category</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_ltp"
-                value="LTP"
-                checked/>
-                  <span class="pl-1">LTP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_cp"
-                value="CP"
-                checked/>
-                  <span class="pl-1">CP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_ycp"
-                value="YCP"
-                checked/>
-                  <span class="pl-1">YCP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_vol"
-                value="Vol"
-                checked/>
-                  <span class="pl-1">Vol</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_chg"
-                value="Chg"
-                checked/>
-                  <span class="pl-1">Chg</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_pchg"
-                value="% Chg"
-                checked/>
-                  <span class="pl-1">% Chg</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_bqty"
-                value="B.Qty"
-                checked/>
-                  <span class="pl-1">B.Qty</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_bid"
-                value="BID"
-                checked/>
-                  <span class="pl-1">BID</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_ask"
-                value="ASK"
-                checked/>
-                  <span class="pl-1">ASK</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_aqty"
-                value="A.Qty"
-                checked/>
-                  <span class="pl-1">A.Qty</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_trades"
-                value="Trades"
-                checked/>
-                  <span class="pl-1">Trades</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_turnover"
-                value="Turnover"
-                checked/>
-                  <span class="pl-1">Turnover</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_open"
-                value="Open"
-                checked/>
-                  <span class="pl-1">Open</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_high"
-                value="High"
-                checked/>
-                  <span class="pl-1">High</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="col-checkbox"
-                data-col="mw_screener_low"
-                value="Low"
-                checked/>
-                  <span class="pl-1">Low</span>
-              </p> 
+}
+
+    </style>
+</head>
+<body>
+    <div class="container-fluid topbar">
+        <div class="row align-items-center">
+            <div class="col-md-3 d-flex align-items-center">
+                <div class="logo">UFTFAST</div>
+                <div class="market-watch ml-2">Market-watch</div>
             </div>
-            <div id="mw_block_table_dropdown" class="grid-container" style="display: none;"> 
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                    class="mw_block_col-checkbox"
-                    data-col="mw_block_symbol"
-                    value="Symbol"
-                    checked/>
-                  <span class="pl-1">Symbol</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input   type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_cn"
-                value="CompanyName"
-                checked/>
-                  <span class="pl-1">Com: Name</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_sector"
-                value="Sector"
-                checked/>
-                  <span class="pl-1">Sector</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_category"
-                value="category"
-                checked/>
-                  <span class="pl-1">Category</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_ltp"
-                value="LTP"
-                checked/>
-                  <span class="pl-1">LTP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_cp"
-                value="CP"
-                checked/>
-                  <span class="pl-1">CP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_min_price"
-                value="Min Price"
-                checked/>
-                  <span class="pl-1">Min Price</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_max_price"
-                value="Max Price"
-                checked/>
-                  <span class="pl-1">Max Price</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_trades"
-                value="Trades"
-                checked/>
-                  <span class="pl-1">Trades</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_qty"
-                value="Quantity"
-                checked/>
-                  <span class="pl-1">Quantity</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_block_col-checkbox"
-                data-col="mw_block_value"
-                value="Value"
-                checked/>
-                  <span class="pl-1">Value</span>
-              </p>
-              
+            <div class="col-md-6 d-flex align-items-center justify-content-center">
+                <div class="badge badge-warning">DSE</div>
+                <select class="custom-select mx-2 index-dropdown">
+                    <option value="dsex">DSEX</option>
+                </select>
+                <div class="index-value ml-2">1723.61</div>
+                <div class="index-change ml-2">+10.14 (+0.59%)</div>
             </div>
-            <div id="mw_gsec_table_dropdown" class="grid-container" style="display: none;"> 
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                    class="mw_gsec_col-checkbox"
-                    data-col="mw_gsec_table-col-1"
-                    value="Symbol"
-                    checked/>
-                  <span class="pl-1">Symbol</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input   type="checkbox"
-                class="mw_gsec_col-checkbox"
-                data-col="mw_gsec_table-col-2"
-                value="CompanyName"
-                checked/>
-                  <span class="pl-1">Com: Name</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_gsec_col-checkbox"
-                data-col="mw_gsec_table-col-3"
-                value="Sector"
-                checked/>
-                  <span class="pl-1">Sector</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_gsec_col-checkbox"
-                data-col="mw_gsec_table-col-4"
-                value="Category"
-                checked/>
-                  <span class="pl-1">Category</span>
-              </p>
-              <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-5"
-                  value="Coup. Rate"
-                  checked/>
-                    <span class="pl-1">Coup. Rate</span>
-              </p>
-              <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-6"
-                  value="Yield"
-                  checked/>
-                    <span class="pl-1">Yield</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_gsec_col-checkbox"
-                data-col="mw_gsec_table-col-7"
-                value="LTP"
-                checked/>
-                  <span class="pl-1">LTP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                <input  type="checkbox"
-                class="mw_gsec_col-checkbox"
-                data-col="mw_gsec_table-col-8"
-                value="LTP"
-                checked/>
-                  <span class="pl-1">CP</span>
-              </p>
-              <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-9"
-                  value="YCP"
-                  checked/>
-                    <span class="pl-1">YCP</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-10"
-                  value="Vol"
-                  checked/>
-                    <span class="pl-1">Vol</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-11"
-                  value="Chg"
-                  checked/>
-                    <span class="pl-1">Chg</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-12"
-                  value="% Chg"
-                  checked/>
-                    <span class="pl-1">% Chg</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-13"
-                  value="B.Qty"
-                  checked/>
-                    <span class="pl-1">B.Qty</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-14"
-                  value="BID"
-                  checked/>
-                    <span class="pl-1">BID</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-15"
-                  value="ASK"
-                  checked/>
-                    <span class="pl-1">ASK</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-16"
-                  value="A.Qty"
-                  checked/>
-                    <span class="pl-1">A.Qty</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-17"
-                  value="Trades"
-                  checked/>
-                    <span class="pl-1">Trades</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-18"
-                  value="Turnover"
-                  checked/>
-                    <span class="pl-1">Turnover</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-19"
-                  value="Open"
-                  checked/>
-                    <span class="pl-1">Open</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-20"
-                  value="High"
-                  checked/>
-                    <span class="pl-1">High</span>
-                </p>
-                <p class="col-check-container" align="left">
-                  <input  type="checkbox"
-                  class="mw_gsec_col-checkbox"
-                  data-col="mw_gsec_table-col-21"
-                  value="Low"
-                  checked/>
-                    <span class="pl-1">Low</span>
-                </p>  
-            </div> 
-           </div> 
-      </div>
-   </div>
-   
-    <div id="web-market-watch-container" class="tableFixHead-Portal-Page">
-        <table data-sortable id="market_watch_screener"  class="data_table table-dark table-striped screener_table pt-2">
-            <thead class="mwatch_table_thead"> 
-              <th class="mw_screener_symbol mwatch_table_th" data-sort="symbol">Symbol</th>
-              <th class="mw_screener_cn mwatch_table_th" data-sort="company_name">Company Name</th>
-              <th class="mw_screener_sector mwatch_table_th" data-sort="sector">Sector</th>
-              <th class="mw_screener_category mwatch_table_th" data-sort="symbol_category">Category</th>
-              <th class="mw_screener_ltp ui-sortable-handle" data-sort="ltp">LTP</th>
-              <th class="mw_screener_cp ui-sortable-handle" data-sort="close_price">CP</th>
-              <th class="mw_screener_ycp ui-sortable-handle" data-sort="ycp">YCP</th>
-              <th class="mw_screener_vol ui-sortable-handle" data-sort="total_qty">Vol</th>
-              <th class="mw_screener_chg ui-sortable-handle" data-sort="ltp_change">Chg</th>
-              <th class="mw_screener_pchg ui-sortable-handle" data-sort="ltp_changeper">% Chg</th>
-              <th class="mw_screener_bqty ui-sortable-handle" data-sort="bid_qty">B.Qty</th>
-              <th class="mw_screener_bid ui-sortable-handle" data-sort="bid_price">BID</th>
-              <th class="mw_screener_ask ui-sortable-handle" data-sort="ask_price">ASK</th>
-              <th class="mw_screener_aqty ui-sortable-handle" data-sort="ask_qty">A.Qty</th>
-              <th class="mw_screener_trades ui-sortable-handle" data-sort="total_trades">Trades</th>
-              <th class="mw_screener_turnover ui-sortable-handle" data-sort="total_value">Turnover</th>
-              <th class="mw_screener_open ui-sortable-handle" data-sort="open">Open</th>
-              <th class="mw_screener_high ui-sortable-handle" data-sort="high">High</th>
-              <th class="mw_screener_low ui-sortable-handle" data-sort="low">Low</th>  
-            </thead>
-            <tbody></tbody>
-        </table>
-       
-        <table id="mw_block_table" style="display: none;" class="data_table block_table pt-2 table-dark table-striped">
-            <thead class="mwatch_table_thead"> 
-              <th class="mw_block_symbol mwatch_table_th" data-sort="symbol">Symbol</th>
-              <th class="mw_block_cn mwatch_table_th" data-sort="company_name">Company Name</th>
-              <th class="mw_block_sector mwatch_table_th" data-sort="sector">Sector</th>
-              <th class="mw_block_category mwatch_table_th" data-sort="symbol_category">Category</th>
-              <th class="mw_block_ltp ui-sortable-handle" data-sort="ltp">LTP</th>
-              <th class="mw_block_cp ui-sortable-handle" data-sort="close_price">CP</th>
-              <th class="mw_block_min_price ui-sortable-handle" data-sort="low">Min Price</th>
-              <th class="mw_block_max_price ui-sortable-handle" data-sort="high">Max Price</th>
-              <th class="mw_block_trades ui-sortable-handle" data-sort="total_trades">Trades</th>
-              <th class="mw_block_qty ui-sortable-handle" data-sort="total_qty">Quantity</th>
-              <th class="mw_block_value ui-sortable-handle" data-sort="total_value">Value</th> 
-            </thead>
-            <tbody></tbody>
-        </table>
-       
-        <table id="mw_gsec_table" style="display: none;" class="data_table gsec_table pt-2  table-dark table-striped">
-            <thead class="mwatch_table_thead"> 
-              <th class="mw_gsec_table-col-1 mwatch_table_th" data-sort="symbol">Symbol</th>
-              <th class="mw_gsec_table-col-2 mwatch_table_th" data-sort="company_name">Company Name</th>
-              <th class="mw_gsec_table-col-3 mwatch_table_th" data-sort="sector">Sector</th>
-              <th class="mw_gsec_table-col-4 mwatch_table_th" data-sort="symbol_category">Category</th>
-              <th class="mw_gsec_table-col-5" data-sort="coupon_rate">Coup. Rate</th>
-              <th class="mw_gsec_table-col-6" data-sort="gsec_yield">Yield</th>
-              <th class="mw_gsec_table-col-7" data-sort="ltp">LTP</th>
-              <th class="mw_gsec_table-col-8" data-sort="close_price">CP</th>
-              <th class="mw_gsec_table-col-9" data-sort="ycp">YCP</th>
-              <th class="mw_gsec_table-col-10" data-sort="total_qty">Vol</th>
-              <th class="mw_gsec_table-col-11" data-sort="ltp_change">Chg</th>
-              <th class="mw_gsec_table-col-12" data-sort="ltp_changeper">% Chg</th>
-              <th class="mw_gsec_table-col-13" data-sort="bid_qty">B.Qty</th>
-              <th class="mw_gsec_table-col-14" data-sort="bid_price">BID</th>
-              <th class="mw_gsec_table-col-15" data-sort="ask_price">ASK</th>
-              <th class="mw_gsec_table-col-16" data-sort="ask_qty">A.Qty</th>
-              <th class="mw_gsec_table-col-17" data-sort="total_trades">Trades</th>
-              <th class="mw_gsec_table-col-18" data-sort="total_value">Turnover</th>
-              <th class="mw_gsec_table-col-19" data-sort="open">Open</th>
-              <th class="mw_gsec_table-col-20" data-sort="high">High</th>
-              <th class="mw_gsec_table-col-21" data-sort="low">Low</th>            
-            </thead>
-            <tbody></tbody>
-        </table>
+            <div class="col-md-3 d-flex align-items-center justify-content-end">
+                <button class="btn btn-success btn-sm mx-1">BUY</button>
+                <button class="btn btn-danger btn-sm mx-1">SELL</button>
+                <button class="btn btn-primary btn-sm mx-1">Limit Request</button>
+                <div class="badge badge-warning mx-1">TDA</div>
+                <input type="text" class="form-control form-control-sm mx-1 search-symbol" placeholder="Search Symbol">
+                <div class="total-volume mx-2">Total Volume: -</div>
+                <div class="total-trade mx-2">Total Trade: -</div>
+                <div class="trade-bar d-flex align-items-center mx-1">
+                    <div class="bar green"></div>
+                    <div class="bar red"></div>
+                </div>
+                <div class="dealer-info d-flex flex-column mx-2">
+                    <span>Dealer ID: UFTTRDR051</span>
+                    <span>Total: 1,91,30,13,272.6</span>
+                </div>
+                <div class="alerts d-flex align-items-center">
+                    <div class="alert-icon mx-1">!</div>
+                    <div class="notification-icon mx-1">0</div>
+                    <div class="settings-icon mx-1">⚙</div>
+                </div>
+            </div>
+        </div>
     </div>
-  
-    <div class="d-flex justify-content-center market-watch-pagination mt-2 mb-2">
-         <button class="btn btn-info btn-sm previous_page" ><< Previous</button>
-         <button class="btn btn-info btn-sm next_page ml-2" >Next >></button>
-    </div>
-  </div>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/page-js/widgets/market_watch.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
