@@ -1,931 +1,125 @@
-<style>
-  .watchlist_ticker.clicked {
-      border: 1px solid var(--nav-active-color);
-      background-color: var(--navbar-active-bg);
-  }
- 
-  .wlremove:hover{
-     color: rgb(0, 203, 230);
-  }
-  .wlremove{
-      background-color: rgb(255,255,255,0);
-      border: 0;
-      color: var(--font-muted);
-  }
-  .ticker_name{
-      background-color: inherit;
-      border: 0;
-      /* color: var(--font-color); */
-  }
-  .ticker_name:focus{
-      outline: 0;
-      line-height: 0.7rem;
-  }
-  .watchlist_table{
-      white-space: nowrap;
-      width: 100%;
-  }
-  .watchlist_dropdown .dropdown-item {
-      color: var(--font-muted);
-      background-color: var(--select-bg);
-      border: 1px solid  var(--gridstack-border);
-      padding-top: 0.1rem;
-      padding-bottom: 0.1rem;
-  }
-  .watchlist_dropdown .dropdown-item:hover {
-      color:black;
-      background-color:var(--nav-active-color);
-  }
-  
-  .watchlist-drop
-  {
-      padding: 1px 10px 2px 10px;
-      color: var(--font-muted);
-      background-color: var(--select-bg-menu);
-      box-shadow: 0 0 black;
-      border: 1px solid #97a6b36b;
-      border-radius: 4px;
-      font-size: 0.8rem;
-  }
-
-  .web-col-dropdown-sorting
- {
-      border: 1px solid #97a6b36b;
-      border-radius: 4px;
-      /* padding: 2px 19px 3px 19px; */
-      background-color: var(--select-bg-menu);
-      color: var(--font-muted);
-      box-shadow: 0 0 black;
-      text-align: center;
-      font-size: 0.8rem;
-}
-
-.watch_bid_bg{
-  background-color: var(--mwatch-bid-bg-color) !important;
-  padding: 0px 5px;
-}
-
-.watch_ask_bg{
-  background-color: var(--mwatch-ask-bg-color) !important;
-  padding: 0px 5px;
-}
-
-.ui-state-highlight {
-    background-color: rgba(126, 125, 123, 0.7) !important;  
-    border: 2px dotted #ccc;   
-    opacity: 1.5;
-}
-
-.dragging-shadow { 
-    box-shadow: 0px 1px 2px 2px rgba(148, 148, 147, 0.7);
-}
-
-.watchlist_table th{
-  cursor: pointer;
-}
-.watchlist_table th[data-sorted="asc"]::after {
-  content: " ▲";
-}
-
-.watchlist_table th[data-sorted="desc"]::after {
-    content: " ▼";
-}
-
-.watchlist_table th,
-.watchlist_table td {
-  padding-left: var(--all-table-padding-left);
-  padding-right: var(--all-table-padding-right);
-}
-
-.compact-grid-container {
-  display: grid;
-  grid-template-columns: repeat(5, 110px);
-  gap: 8px;
-}
-.sorting-grid-container {
-  display: grid;
-  grid-template-columns: repeat(5, 120px);
-  gap: 8px;
-}
-.fa-sort-desc{
-  font-size: 19px; 
-}
-.fa-sort-asc{
-  font-size: 19px; 
-  margin-top: 14px;
-}
-.sorting-icon { 
-  margin-bottom: 6px;
-  margin-right: 7px;
-}
-.sorting-text{
-  margin-right: 37px;
-}
-
-.watchlist_table .progress{
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  height: 1rem;
-  overflow: hidden;
-  font-size: .75rem;
-  background-color: transparent !important;
-  border-radius: 0;
-}
-.watch-volume-progress-bar{
-  position: relative;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex; 
-  overflow: hidden;
-}
-
-.total-volume_text {
-  color: #fff;
-  position: absolute;
-  top: 6%;
-  left: 50%;
-  transform: translate(-50%);
-}
-
-/* Tooltip container */
-.watchlist-tooltip {
-  position: relative;
-  display: inline-block;
-  margin-left: 8px;
-  cursor: pointer;
-}
-
-.symbol-info-tooltip {
-  position: absolute; 
-  left: 160%;
-  top: 50%;
-  z-index: 20;
-  font-size: 10px;
-  transform: translateY(-48%);
-  color: var(--font-color);
-  background-color: var(--select-bg);
-  padding: 0px 10px;
-  border-radius: 5px; 
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
-  text-align: left;
-  min-height: 40px;
-  max-height: fit-content;
-  display: flex;
-  flex-direction: column;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  border: 1px solid #555555;
-}
-
-.symbol-info-tooltip .tooltip-item:first-child {
-  margin-top: 7px;
-}
-
-.watchlist-tooltip .watchlist-dots:hover + .symbol-info-tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.symbol-container-watchlist{
-  display: flex;
-  margin-top: 3px;
-}
-
-span.tooltip-item{
-  height: 20px;
-}
-
-.watchlist-thead-sticky{
-  position: sticky; 
-  top: 38px; 
-  z-index: 8;
-}
-</style>
-  <div style="position:sticky; z-index:10; top:0; left: 0; right: 0;" class="widget-menu widget-menu-front-size row p-2">
-    <div class="col-12 d-flex justify-content-start align-items-center p-0">
-      <a class="watchlist-drop" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" title="Watchlist Options"><i class="fa fa-bars"></i></a>
-
-      <div class="dropdown-menu p-0 m-0">
-        <ul class="watchlist_dropdown p-0 m-0">
-          <li id="create_{{table_id}}" class="dropdown-item" onclick="create_watchlist(this.id)">Create Watchlist</li>
-          <li id="remove_{{table_id}}" class="dropdown-item" title="Remove Selected Watchlist" onclick="delete_watchlist(this.id)">Remove Selected Watchlist</li>
-          <!-- <li class="dropdown-item" onclick="watchlist_view('basic')">Watchlist Basic</li>
-          <li class="dropdown-item" onclick="watchlist_view('advanced')">Watchlist Advanced</li>
-          <li class="dropdown-item" onclick="watchlist_view('screener')">Watchlist Screener</li> -->
-        </ul>
-      </div>
-      <div class="ml-2">
-        <select id="select_{{table_id}}" onchange="load_watchlist(this.value, this.id)" class="user_watchlists custom-select-drop"> 
-          {% for result in results %}
-          <option value="{{ result }}">{{ result }}</option>
-          {% endfor %} 
-      </select>
-      </div>
-      <div class="ml-2">
-        <input id="add_{{table_id}}" placeholder="Add symbol" class="wl-symbol searchbox symbol_input ui-autocomplete-input width-ignore" type="text" autocomplete="off">
-      </div>
-      <div class="ml-2">
-        <input id="search_{{table_id}}" placeholder="Search symbol" class="wl-search-symbol searchbox symbol_input ui-autocomplete-input width-ignore" type="text" autocomplete="off">
-      </div>
-      <div class="ml-2">
-        <button id="clear_{{table_id}}" onclick="clear_watchlist('{{table_id}}')" class="widget-btn-clear btn mr-2">Clear</button>
-      </div>
-      <div class="ml-2">
-        <button id="save_{{table_id}}" onclick="saveRowOrder('{{table_id}}')" class="widget-btn-wlsave btn mr-2" style="display: none;">Save</button>
-      </div>
-    </div>   
-  </div>
-   
-  <div style="display: none">
-    <div id="watchlist_settings_{{table_id}}">
-      <div class="widget-settings-tabs" data-widget-id="{{table_id}}"> 
-        <button class="tablinks active" onclick="openTab(event, 'selected_val_{{ table_id }}')">Auto Sorting</button>
-        <button class="tablinks" onclick="openTab(event, 'fontSize_{{table_id}}')">Font Size</button> 
-        <button class="tablinks" onclick="openTab(event, 'columnShowHide_{{table_id}}')">Columns</button>
-        <button class="tablinks" onclick="openTab(event, 'compact_{{table_id}}')">Compact Mode</button>
-        <div class="active-indicator"></div>
-      </div>
-
-      <div id="selected_val_{{table_id}}" class="sorting-radio-group widget-settings-tabcontent" style="display: block;">
-        <div class="sorting-grid-container watch-list-soritng-container">
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="OFF" checked> 
-                <span class="sorting-radio-mark"></span> 
-                <span class="sorting-text">OFF</span>
-            </label>
-            <label class="sorting-radio">
-              <input type="radio" name="sorting_{{table_id}}" value="Desc BQ"> 
-              <span class="sorting-radio-mark"></span>
-              <span>BQ </span>
-              <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc BQ"> 
-                <span class="sorting-radio-mark"></span>
-                <span>BQ </span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label> 
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Desc AQ"> 
-                <span class="sorting-radio-mark"></span>
-                <span>AQ </span>
-                <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc AQ"> 
-                <span class="sorting-radio-mark"></span>
-                <span>AQ </span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label> 
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Desc VOL"> 
-                <span class="sorting-radio-mark"></span>
-                <span>VOL </span>
-                <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc VOL"> 
-                <span class="sorting-radio-mark"></span>
-                <span>VOL </span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label> 
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Desc YVOL"> 
-                <span class="sorting-radio-mark"></span>
-                <span>YVOL </span>
-                <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc YVOL"> 
-                <span class="sorting-radio-mark"></span>
-                <span>YVOL </span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Desc CHG"> 
-                <span class="sorting-radio-mark"></span>
-                <span>CHG </span>
-                <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc CHG"> 
-                <span class="sorting-radio-mark"></span>
-                <span>CHG </span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Desc %CHG"> 
-                <span class="sorting-radio-mark"></span>
-                <span>%CHG </span>
-                <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc %CHG"> 
-                <span class="sorting-radio-mark"></span>
-                <span>%CHG </span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            {% if is_cse_enabled %}
-            <label class="sorting-radio">
-              <input type="radio" name="sorting_{{table_id}}" value="Desc BQ CSE"> 
-              <span class="sorting-radio-mark"></span>
-              <span>BQ CSE</span>
-              <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc BQ CSE"> 
-                <span class="sorting-radio-mark"></span>
-                <span>BQ CSE</span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-
-            <label class="sorting-radio">
-              <input type="radio" name="sorting_{{table_id}}" value="Desc AQ CSE"> 
-              <span class="sorting-radio-mark"></span>
-              <span>AQ CSE</span>
-              <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc AQ CSE"> 
-                <span class="sorting-radio-mark"></span>
-                <span>AQ CSE</span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-              <input type="radio" name="sorting_{{table_id}}" value="Desc VOL CSE"> 
-              <span class="sorting-radio-mark"></span>
-              <span>VOL CSE</span>
-              <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc VOL CSE"> 
-                <span class="sorting-radio-mark"></span>
-                <span>VOL CSE</span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-              <input type="radio" name="sorting_{{table_id}}" value="Desc CHG CSE"> 
-              <span class="sorting-radio-mark"></span>
-              <span>CHG CSE</span>
-              <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc CHG CSE"> 
-                <span class="sorting-radio-mark"></span>
-                <span>CHG CSE</span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Desc %CHG CSE"> 
-                <span class="sorting-radio-mark"></span>
-                <span>%CHG CSE</span>
-                <span class="sorting-icon"><i class="fa fa-sort-desc" aria-hidden="true"></i></span>
-            </label>
-            <label class="sorting-radio">
-                <input type="radio" name="sorting_{{table_id}}" value="Asc %CHG CSE"> 
-                <span class="sorting-radio-mark"></span>
-                <span>%CHG CSE</span>
-                <span class="sorting-icon"><i class="fa fa-sort-asc" aria-hidden="true"></i></span>
-            </label>
-            {% endif %}
-        </div>
-      </div>
-  
-      <div id="fontSize_{{table_id}}" class="watchlist-font-group widget-settings-tabcontent">
-       <div class="grid-container">
-        <label class="custom-radio">
-          <input type="radio" name="fontsize_{{table_id}}" value="extra-large"> 
-          <span class="custom-radio-mark"></span> X Large
-      </label>
-      <label class="custom-radio">
-          <input type="radio" name="fontsize_{{table_id}}" value="large"> 
-          <span class="custom-radio-mark"></span> Large
-      </label> 
-      <label class="custom-radio">
-          <input type="radio" name="fontsize_{{table_id}}" value="normal"> 
-          <span class="custom-radio-mark"></span> Normal
-      </label>
-      <label class="custom-radio">
-        <input type="radio" name="fontsize_{{table_id}}" value="system" checked> 
-        <span class="custom-radio-mark"></span> System
-      </label>
-      <label class="custom-radio">
-          <input type="radio" name="fontsize_{{table_id}}" value="small"> 
-          <span class="custom-radio-mark"></span> Small
-      </label>
-      <label class="custom-radio">
-          <input type="radio" name="fontsize_{{table_id}}" value="extra-small"> 
-          <span class="custom-radio-mark"></span> X Small
-      </label> 
-      <label class="custom-radio">
-          <input type="radio" name="fontsize_{{table_id}}" value="xxs-small"> 
-          <span class="custom-radio-mark"></span> XX Small
-      </label> 
-       </div>
-      </div> 
-      
-      <div id="columnShowHide_{{table_id}}" class="widget-settings-tabcontent">
-        <button id="column_save_{{table_id}}" onclick="column_save_watchlist({{table_id}})" class="btn btn-small btn-danger">Save</button>
-        <div class="grid-container">
-          <div class="col-check-container" >
-              <input  type="checkbox"
-                  class="{{table_id}}-col-checkbox"
-                  data-col="{{table_id}}-col-ac"
-                  value="A"
-                   />
-              <span class="pl-1">A</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-                class="{{table_id}}-col-checkbox"
-                data-col="{{table_id}}-col-symbol"
-                value="Symbol"
-                data-column="symbol"
-                />
-            <span class="pl-1">Symbol</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-                class="{{table_id}}-col-checkbox"
-                data-col="{{table_id}}-col-group"
-                value="Group"
-                data-column="symbol_category"
-                />
-            <span class="pl-1">Group</span>
-          </div>
-          <div class="col-check-container" >
-            <input   type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-ltp"
-            value="LTP"
-            data-column="ltp"
-            />
-            <span class="pl-1">LTP</span>
-          </div> 
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-cp"
-            value="CP"
-            data-column="close_price"
-            />
-            <span class="pl-1">CP</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-bq"
-            value="BQ"
-            data-column="bid_qty"
-            />
-            <span class="pl-1">BQ</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-bid"
-            value="BID"
-            data-column="bid_price"
-            />
-            <span class="pl-1">BID</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-ask"
-            value="ASK"
-            data-column="ask_price"
-            />
-            <span class="pl-1">ASK</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-aq"
-            value="AQ"
-            data-column="ask_qty"
-            />
-            <span class="pl-1">AQ</span>
-          </div>  
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-high"
-            value="HIGH"
-            data-column="high"
-            />
-            <span class="pl-1">HIGH</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-low"
-            value="LOW"
-            data-column="low"
-            />
-            <span class="pl-1">LOW</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-vol"
-            value="VOL"
-            data-column="total_qty"
-            />
-            <span class="pl-1">VOL</span>
-          </div> 
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-ycp"
-            value="YCP"
-            data-column="ycp"
-            />
-            <span class="pl-1">YCP</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-yvol"
-            value="YVOL"
-            data-column="yvol"
-            />
-            <span class="pl-1">YVOL</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-chg"
-            value="CHG"
-            data-column="ltp_change"
-            />
-            <span class="pl-1">CHG</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-pchg"
-            value="CHGPER"
-            data-column="ltp_changeper"
-            />
-            <span class="pl-1">%CHG</span>
-          </div> 
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-lvol"
-            value="LVOL"
-            data-column="last_qty"
-            />
-            <span class="pl-1">L.VOL</span>
-          </div> 
-         
-          {% if is_cse_enabled %}
-          <div class="col-check-container" >
-            <input   type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-ltp-cse"
-            value="LTP.CSE"
-            data-column="cse_ltp"
-            />
-            <span class="pl-1">LTP.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-bq-cse"
-            value="BQ.CSE"
-            data-column="cse_bid_qty"
-            />
-            <span class="pl-1">BQ.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-bid-cse"
-            value="BID.CSE"
-            data-column="cse_bid_price"
-            />
-            <span class="pl-1">BID.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-ask-cse"
-            value="ASK.CSE"
-            data-column="cse_ask_price"
-            />
-            <span class="pl-1">ASK.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-aq-cse"
-            value="AQ.CSE"
-            data-column="cse_ask_qty"
-            />
-            <span class="pl-1">AQ.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-vol-cse"
-            value="VOL.CSE"
-            data-column="cse_total_qty"
-            />
-            <span class="pl-1">VOL.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-chg-cse"
-            value="CHG.CSE"
-            data-column="cse_ltp_change"
-            />
-            <span class="pl-1">CHG.CSE</span>
-          </div>
-          <div class="col-check-container" >
-            <input  type="checkbox"
-            class="{{table_id}}-col-checkbox"
-            data-col="{{table_id}}-col-pchg-cse"
-            value="CHGPER.CSE"
-            data-column="cse_ltp_changeper"
-            />
-            <span class="pl-1">%CHG.CSE</span>
-          </div> 
-          {% endif %}
-
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-52w-hl" 
-            value="52WH/L"
-            data-column="52w_hl"
-            
-           />
-            <span class="pl-1">52W H/L</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-26w-hl" 
-            value="26WH/L" 
-            
-            data-column="26w_hl"
-           />
-            <span class="pl-1">26W H/L</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-4w-hl" 
-            value="4WH/L" 
-            
-            data-column="4w_hl"
-           />
-            <span class="pl-1">4W H/L</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-2w-hl" 
-            value="2WH/L" 
-            
-            data-column="2w_hl"
-           />
-            <span class="pl-1">2W H/L</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1w-hl" 
-            value="1WH/L" 
-            
-            data-column="1w_hl"
-           />
-            <span class="pl-1">1W H/L</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1y-ch" 
-            value="1YCH" 
-            
-            data-column="ch_52w"
-           />
-            <span class="pl-1">1Y CH</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-6m-ch" 
-            value="6MCH" 
-            
-            data-column="ch_26w"
-           />
-            <span class="pl-1">6M CH</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1m-ch" 
-            value="1MCH" 
-            
-            data-column="ch_4w"
-           />
-            <span class="pl-1">1M CH</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-2w-ch" 
-            value="2WCH" 
-             
-            data-column="ch_2w"
-           />
-            <span class="pl-1">2W CH</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1w-ch" 
-            value="1WCH" 
-            
-            data-column="ch_w"
-           />
-            <span class="pl-1">1W CH</span>
-          </div>
-
-          <!-- for change per -->
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1y-ch-per" 
-            value="1YCH%" 
-            data-column="chp_52w"
-            
-           />
-            <span class="pl-1">1Y CH%</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-6m-ch-per" 
-            value="6MCH%" 
-            data-column="chp_26w"
-            
-           />
-            <span class="pl-1">6M CH%</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1m-ch-per" 
-            value="1MCH%" 
-            data-column="chp_4w"
-            
-           />
-            <span class="pl-1">1M CH%</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-2w-ch-per" 
-            value="2WCH%" 
-            data-column="chp_2w"
-            
-           />
-            <span class="pl-1">2W CH%</span>
-          </div>
-          
-          <div class="col-check-container">
-            <input type="checkbox" 
-            class="{{table_id}}-col-checkbox" 
-            data-col="{{table_id}}-col-1w-ch-per" 
-            value="1WCH%" 
-            data-column="chp_w"
-            
-           />
-            <span class="pl-1">1W CH%</span>
-          </div>
-          
-        </div>
-      </div> 
-
-      <div id="compact_{{table_id}}" class="watchlist-compact-group widget-settings-tabcontent">
-        <div class="toggle-button-cover">
-          <div class="compact-button-cover">
-            <div class="compact-button compact-r">
-              <input type="checkbox" class="compact-checkbox" name="compact_{{table_id}}" id="toggle_{{table_id}}"/> 
-              <div class="compact-knobs"></div>
-              <div class="compact-layer"></div>
-            </div>
-          </div>
-        </div> 
-      </div>
-
-    </div>
-  </div>
-  <div id="web-watchlist-container" class="protected tableFixHead-Portal-Page">
-      <table class="watchlist_table table-dark table-striped watchlist-symbol-context" id="{{table_id}}" width="100%"  border="0" cellpadding="0" cellspacing="0">
-          <thead class="watchlist-thead-sticky">
-            <tr style="text-align: right !important;">
-              <th class="{{table_id}}-col-ac text-center">-</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-symbol')" class="{{table_id}}-col-symbol text-left">Symbol</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-group')" class="{{table_id}}-col-group text-center ui-sortable-handle">Group</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-ltp')" class="{{table_id}}-col-ltp ui-sortable-handle">LTP</th>
-              {% if is_cse_enabled %}
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-ltp-cse')" class="{{table_id}}-col-ltp-cse ui-sortable-handle">LTP.CSE</th>
-              {% endif %}
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-cp')" class="{{table_id}}-col-cp ui-sortable-handle">CP</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-bq')" class="{{table_id}}-col-bq ui-sortable-handle">BQ</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-bid')" class="{{table_id}}-col-bid ui-sortable-handle">BID</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-ask')" class="{{table_id}}-col-ask ui-sortable-handle">ASK</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-aq')" class="{{table_id}}-col-aq ui-sortable-handle">AQ</th>
-
-              {% if is_cse_enabled %}
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-bq-cse')" class="{{table_id}}-col-bq-cse ui-sortable-handle">BQ.CSE</th>  
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-bid-cse')" class="{{table_id}}-col-bid-cse ui-sortable-handle">BID.CSE</th>  
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-ask-cse')" class="{{table_id}}-col-ask-cse ui-sortable-handle">ASK.CSE</th>  
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-aq-cse')" class="{{table_id}}-col-aq-cse ui-sortable-handle">AQ.CSE</th>
-              {% endif %}
-              
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-high')" class="{{table_id}}-col-high ui-sortable-handle">HIGH</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-low')" class="{{table_id}}-col-low ui-sortable-handle">LOW</th>
-              <th style="width: 115px;" onclick="sortTable('{{table_id}}', '{{table_id}}-col-vol')" class="{{table_id}}-col-vol text-center ui-sortable-handle">VOL</th>
-              {% if is_cse_enabled %}
-              <th style="width: 115px;" onclick="sortTable('{{table_id}}', '{{table_id}}-col-vol-cse')" class="{{table_id}}-col-vol-cse text-center ui-sortable-handle">VOL.CSE</th>
-              {% endif %}
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-ycp')" class="{{table_id}}-col-ycp ui-sortable-handle">YCP</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-yvol')" class="{{table_id}}-col-yvol ui-sortable-handle">YVOL</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-chg')" class="{{table_id}}-col-chg ui-sortable-handle">CHG</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-pchg')" class="{{table_id}}-col-pchg ui-sortable-handle">%CHG</th>
-              {% if is_cse_enabled %}
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-chg-cse')" class="{{table_id}}-col-chg-cse ui-sortable-handle">CHG.CSE</th>
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-pchg-cse')" class="{{table_id}}-col-pchg-cse ui-sortable-handle">%CHG.CSE</th>
-              {% endif %}
-              <th onclick="sortTable('{{table_id}}', '{{table_id}}-col-lvol')" class="{{table_id}}-col-lvol ui-sortable-handle">L.VOL</th>
-
-              <th class="{{table_id}}-col-52w-hl ui-sortable-handle">52W H/L</th>
-              <th class="{{table_id}}-col-26w-hl ui-sortable-handle">26W H/L</th>
-              <th class="{{table_id}}-col-4w-hl ui-sortable-handle">4W H/L</th>
-              <th class="{{table_id}}-col-2w-hl ui-sortable-handle">2W H/L</th>
-              <th class="{{table_id}}-col-1w-hl ui-sortable-handle">1W H/L</th>
-
-              <th class="{{table_id}}-col-1y-ch ui-sortable-handle">1Y CH</th>
-              <th class="{{table_id}}-col-6m-ch ui-sortable-handle">6M CH</th>
-              <th class="{{table_id}}-col-1m-ch ui-sortable-handle">1M CH</th>
-              <th class="{{table_id}}-col-2w-ch ui-sortable-handle">2W CH</th>
-              <th class="{{table_id}}-col-1w-ch ui-sortable-handle">1W CH</th>
-
-              <th class="{{table_id}}-col-1y-ch-per ui-sortable-handle">1Y CH%</th>
-              <th class="{{table_id}}-col-6m-ch-per ui-sortable-handle">6M CH%</th>
-              <th class="{{table_id}}-col-1m-ch-per ui-sortable-handle">1M CH%</th>
-              <th class="{{table_id}}-col-2w-ch-per ui-sortable-handle">2W CH%</th>
-              <th class="{{table_id}}-col-1w-ch-per ui-sortable-handle">1W CH%</th>
-            </tr>
-          </thead>
-          <tbody>
-          
-          </tbody>
-      </table> 
-  </div>
-  <script>
-        var watchlist_table_id =  "{{ table_id }}";
-        var wachlist_name = $('#select_'+watchlist_table_id);
-        var pid_selected = document.querySelector("#profile li.profile-selected-li");
-        var pid = pid_selected?.getAttribute("data-value");
-        
-        if (wachlist_name.length > 0) {
-            let selected_value = localStorage.getItem(`${system_username}_layout_${profile_page}_${pid}_${watchlist_table_id}_selected`);
-            let defaultOption = wachlist_name.find("option:eq(0)").attr("value");
-            let actual_value = selected_value ?? defaultOption;
-            wachlist_name.val(actual_value);
-            load_watchlist(actual_value, watchlist_table_id);
-        } 
-        else if (system_user_role === 'client') {
-            let defaultOption = "Portfolio";
-            let selected_value = localStorage.getItem(`${system_username}_layout_${profile_page}_${pid}_${watchlist_table_id}_selected`) || defaultOption;
-            watchlist_name.val(selected_value);
-            load_watchlist(selected_value, watchlist_table_id);
-        }
-
-
-  </script>
-  <script type="text/javascript" src="{{ url_for('static', filename='js/page-js/widgets/web_watchlist.js') }}"></script>
+<table data-sortable="" class="table-dark table-striped portfolio-symbol-context port-saleable-table compact-mode-off"
+  id="saleable_table" width="100%" border="0" cellpadding="0" cellspacing="0" data-sortable-initialized="true"
+  style="font-size: 0.8rem; font-weight: 500;">
+  <thead>
+    <tr style="text-align: right;">
+      <th class="portfolio_symbol" style="display: table-cell;">
+        <div align="left" class="pl-2">Symbol</div>
+      </th>
+      <th class="portfolio_qty" style="display: table-cell;">
+        <div>Total Qty</div>
+      </th>
+      <th class="portfolio_saleable" style="display: table-cell;">
+        <div>Saleable</div>
+      </th>
+      <th class="portfolio_avgcost" style="display: table-cell;">
+        <div>Avg Cost</div>
+      </th>
+      <th class="portfolio_totalcost" style="display: table-cell;">
+        <div>Total Cost</div>
+      </th>
+      <th class="portfolio_mktrate" style="display: table-cell;">
+        <div>Mkt Rate</div>
+      </th>
+      <th class="portfolio_mktvalue" style="display: table-cell;">
+        <div>Mkt Value</div>
+      </th>
+      <th class="portfolio_gain" style="display: table-cell;">
+        <div>Gain</div>
+      </th>
+      <th class="portfolio_pgain" style="display: table-cell;">
+        <div>% Gain</div>
+      </th>
+      <th class="portfolio_percentage" style="display: table-cell;">
+        <div class="pr-2">%</div>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="text-align: right;" class="portsym ACTIVEFINEPUBLIC orderClicked" data-symbol="ACTIVEFINE"
+      data-symbol-context="ACTIVEFINEPUBLIC" data-board="PUBLIC" data-qty="15006" data-clientcode="34649"
+      onclick="portfolio_link(this)">
+      <td class="portfolio_symbol text-left pl-2" title="" style="display: table-cell;">ACTIVEFINE </td>
+      <td class="portfolio_qty" id="totalqty_ACTIVEFINE" style="display: table-cell;">15006</td>
+      <td class="portfolio_saleable" id="qty_ACTIVEFINE" style="display: table-cell;">15006</td>
+      <td class="portfolio_avgcost" id="avgcost_ACTIVEFINE" style="display: table-cell;">15.17</td>
+      <td class="portfolio_totalcost" id="mktcost_ACTIVEFINE" style="display: table-cell;">2,27,634.84</td>
+      <td class="up portfolio_mktrate" id="mktrate_ACTIVEFINE" style="display: table-cell;">2697.7</td>
+      <td class="up portfolio_mktvalue mkt_val" id="mkt_val_ACTIVEFINE" style="display: table-cell;">4,04,81,686.2</td>
+      <td class="up portfolio_gain total_gain" id="unreal_gain_ACTIVEFINE" style="display: table-cell;">4,02,54,051.36
+      </td>
+      <td class="up portfolio_pgain gain_per" id="gain_per_ACTIVEFINE" style="display: table-cell;">17683.61</td>
+      <td class="portfolio_percentage pr-2" id="invest_per_ACTIVEFINE" style="display: table-cell;">1.42</td>
+    </tr>
+    <tr style="text-align: right;" class="portsym BRACBANKPUBLIC" data-symbol="BRACBANK"
+      data-symbol-context="BRACBANKPUBLIC" data-board="PUBLIC" data-qty="3674" data-clientcode="34649"
+      onclick="portfolio_link(this)">
+      <td class="portfolio_symbol text-left pl-2" title="" style="display: table-cell;">BRACBANK </td>
+      <td class="portfolio_qty" id="totalqty_BRACBANK" style="display: table-cell;">3337</td>
+      <td class="portfolio_saleable" id="qty_BRACBANK" style="display: table-cell;">3674</td>
+      <td class="portfolio_avgcost" id="avgcost_BRACBANK" style="display: table-cell;">345.98</td>
+      <td class="portfolio_totalcost" id="mktcost_BRACBANK" style="display: table-cell;">11,54,549.53</td>
+      <td class="up portfolio_mktrate" id="mktrate_BRACBANK" style="display: table-cell;">1200.1</td>
+      <td class="up portfolio_mktvalue mkt_val" id="mkt_val_BRACBANK" style="display: table-cell;">40,04,733.7</td>
+      <td class="up portfolio_gain total_gain" id="unreal_gain_BRACBANK" style="display: table-cell;">28,50,184.17</td>
+      <td class="up portfolio_pgain gain_per" id="gain_per_BRACBANK" style="display: table-cell;">246.87</td>
+      <td class="portfolio_percentage pr-2" id="invest_per_BRACBANK" style="display: table-cell;">7.21</td>
+    </tr>
+    <tr style="text-align: right;" class="portsym BSCPUBLIC" data-symbol="BSC" data-symbol-context="BSCPUBLIC"
+      data-board="PUBLIC" data-qty="230" data-clientcode="34649" onclick="portfolio_link(this)">
+      <td class="portfolio_symbol text-left pl-2" title="" style="display: table-cell;">BSC </td>
+      <td class="portfolio_qty" id="totalqty_BSC" style="display: table-cell;">230</td>
+      <td class="portfolio_saleable" id="qty_BSC" style="display: table-cell;">230</td>
+      <td class="portfolio_avgcost" id="avgcost_BSC" style="display: table-cell;">129.44</td>
+      <td class="portfolio_totalcost" id="mktcost_BSC" style="display: table-cell;">29,772.12</td>
+      <td class="up portfolio_mktrate" id="mktrate_BSC" style="display: table-cell;">1348.3</td>
+      <td class="up portfolio_mktvalue mkt_val" id="mkt_val_BSC" style="display: table-cell;">3,10,109</td>
+      <td class="up portfolio_gain total_gain" id="unreal_gain_BSC" style="display: table-cell;">2,80,336.88</td>
+      <td class="up portfolio_pgain gain_per" id="gain_per_BSC" style="display: table-cell;">941.61</td>
+      <td class="portfolio_percentage pr-2" id="invest_per_BSC" style="display: table-cell;">0.19</td>
+    </tr>
+    <tr style="text-align: right;" class="portsym CITYBANKPUBLIC" data-symbol="CITYBANK"
+      data-symbol-context="CITYBANKPUBLIC" data-board="PUBLIC" data-qty="2200" data-clientcode="34649"
+      onclick="portfolio_link(this)">
+      <td class="portfolio_symbol text-left pl-2" title="" style="display: table-cell;">CITYBANK <i
+          class="fa fa-bell text-warning" style="font-size: x-small;"></i> </td>
+      <td class="portfolio_qty" id="totalqty_CITYBANK" style="display: table-cell;">2200</td>
+      <td class="portfolio_saleable" id="qty_CITYBANK" style="display: table-cell;">2200</td>
+      <td class="portfolio_avgcost" id="avgcost_CITYBANK" style="display: table-cell;">23.01</td>
+      <td class="portfolio_totalcost" id="mktcost_CITYBANK" style="display: table-cell;">50,631.9</td>
+      <td class="up portfolio_mktrate" id="mktrate_CITYBANK" style="display: table-cell;">193.8</td>
+      <td class="up portfolio_mktvalue mkt_val" id="mkt_val_CITYBANK" style="display: table-cell;">4,26,360</td>
+      <td class="up portfolio_gain total_gain" id="unreal_gain_CITYBANK" style="display: table-cell;">3,75,728.1</td>
+      <td class="up portfolio_pgain gain_per" id="gain_per_CITYBANK" style="display: table-cell;">742.08</td>
+      <td class="portfolio_percentage pr-2" id="invest_per_CITYBANK" style="display: table-cell;">0.32</td>
+    </tr>
+    <tr style="text-align: right;" class="portsym EBLPUBLIC" data-symbol="EBL" data-symbol-context="EBLPUBLIC"
+      data-board="PUBLIC" data-qty="1950" data-clientcode="34649" onclick="portfolio_link(this)">
+      <td class="portfolio_symbol text-left pl-2" title="" style="display: table-cell;">EBL </td>
+      <td class="portfolio_qty" id="totalqty_EBL" style="display: table-cell;">1950</td>
+      <td class="portfolio_saleable" id="qty_EBL" style="display: table-cell;">1950</td>
+      <td class="portfolio_avgcost" id="avgcost_EBL" style="display: table-cell;">26.13</td>
+      <td class="portfolio_totalcost" id="mktcost_EBL" style="display: table-cell;">50,948.48</td>
+      <td class="up portfolio_mktrate" id="mktrate_EBL" style="display: table-cell;">64</td>
+      <td class="up portfolio_mktvalue mkt_val" id="mkt_val_EBL" style="display: table-cell;">1,24,800</td>
+      <td class="up portfolio_gain total_gain" id="unreal_gain_EBL" style="display: table-cell;">73,851.52</td>
+      <td class="up portfolio_pgain gain_per" id="gain_per_EBL" style="display: table-cell;">144.95</td>
+      <td class="portfolio_percentage pr-2" id="invest_per_EBL" style="display: table-cell;">0.32</td>
+    </tr>
+    <tr style="text-align: right;" class="portsym FARCHEMPUBLIC" data-symbol="FARCHEM"
+      data-symbol-context="FARCHEMPUBLIC" data-board="PUBLIC" data-qty="0" data-clientcode="34649"
+      onclick="portfolio_link(this)">
+      <td class="portfolio_symbol text-left pl-2" title="" style="display: table-cell;">FARCHEM </td>
+      <td class="portfolio_qty" id="totalqty_FARCHEM" style="display: table-cell;">20</td>
+      <td class="portfolio_saleable" id="qty_FARCHEM" style="display: table-cell;">0</td>
+      <td class="portfolio_avgcost" id="avgcost_FARCHEM" style="display: table-cell;">34.6</td>
+      <td class="portfolio_totalcost" id="mktcost_FARCHEM" style="display: table-cell;">692</td>
+      <td class="portfolio_mktrate" id="mktrate_FARCHEM" style="display: table-cell;">34.6</td>
+      <td class="portfolio_mktvalue" id="mkt_val_FARCHEM" style="display: table-cell;">692</td>
+      <td class="portfolio_gain" id="unreal_gain_FARCHEM" style="display: table-cell;">0</td>
+      <td class="portfolio_pgain" id="gain_per_FARCHEM" style="display: table-cell;">0</td>
+      <td class="portfolio_percentage pr-2" id="invest_per_FARCHEM" style="display: table-cell;">0</td>
+    </tr>
+    
+  </tbody>
+</table>

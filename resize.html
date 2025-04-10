@@ -3,39 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resizable Table Columns</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/resizable-columns/1.0.1/resizableColumns.css">
+    <title>Sticky Column with Shadow Fix</title>
+    <style>
+        :root {
+            --borderColor: #333333;
+            --stickyBackground: #282828;
+            --headerBackground: #333;
+            --rowEvenBackground: rgba(125, 125, 125, 0.18);
+            --rowOddBackground: rgba(0, 0, 0, 0.26);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .table-wrapper {
+            height: 500px; /* Fixed height for scrolling */
+            border: 1px solid var(--borderColor);
+            overflow: auto;
+        }
+
+        table {
+            width: 2500px; /* Ensures horizontal scrolling */
+            border-spacing: 0;
+            border-collapse: collapse;
+        }
+
+        thead {
+            font-size: 12px;
+             
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        tbody {
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 8px 5px;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--borderColor);
+            background-color: transparent;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Sticky Header */
+        tr.sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--headerBackground);
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Sticky Column */
+        th.sticky,
+        td.sticky {
+            position: sticky;
+            left: 0;
+            background: var(--stickyBackground);
+            z-index: 2; /* Ensure sticky column is above rows */
+        }
+
+        /* Faux shadow for sticky column */
+        th.sticky::after,
+        td.sticky::after {
+            content: "";
+            position: absolute;
+            right: -6px;
+            top: 0;
+            bottom: -1px;
+            width: 5px;
+            border-left: 1px solid var(--borderColor);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        th.sticky::before,
+        td.sticky::before {
+            content: "";
+            position: absolute;
+            left: -6px;
+            top: 0;
+            bottom: -1px;
+            width: 5px;
+            border-right: 1px solid var(--borderColor);
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.08) 100%);
+        }
+
+        /* Striped Rows */
+        tbody tr:nth-child(even) {
+            background-color: var(--rowEvenBackground);
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: var(--rowOddBackground);
+        }
+
+        /* Highlight Selected Row */
+        tr.active {
+            background: #00509d !important;
+        }
+
+        tr.active td.sticky {
+            background: #004080 !important;
+        }
+    </style>
 </head>
 <body>
 
-<table id="resizable-table" class="resizable">
-    <thead>
-        <tr>
-            <th>Column 1</th>
-            <th>Column 2</th>
-            <th>Column 3</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Row 1, Cell 1</td>
-            <td>Row 1, Cell 2</td>
-            <td>Row 1, Cell 3</td>
-        </tr>
-        <tr>
-            <td>Row 2, Cell 1</td>
-            <td>Row 2, Cell 2</td>
-            <td>Row 2, Cell 3</td>
-        </tr>
-        <!-- Add more rows as needed -->
-    </tbody>
-</table>
+<div class="table-wrapper">
+    <table id="stockTable">
+        <thead>
+            <tr class="sticky">
+                <th class="sticky">Stock Name</th>
+                <!-- Dynamically generated headers -->
+            </tr>
+        </thead>
+        <tbody id="stockBody">
+            <!-- Dynamically generated rows -->
+        </tbody>
+    </table>
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/resizable-columns/1.0.1/resizableColumns.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const table = document.getElementById('resizable-table');
-        const resizableTable = new ResizableColumns(table);
+    document.addEventListener("DOMContentLoaded", function () {
+        const tbody = document.getElementById("stockBody");
+        const theadRow = document.querySelector("#stockTable thead tr");
+
+        const columnCount = 35; // More than 30 columns
+        const rowsCount = 1000; // Large dataset
+        const stocks = ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN", "NFLX", "FB", "NVDA"];
+
+        // Create table headers dynamically
+        for (let i = 1; i < columnCount; i++) {
+            let th = document.createElement("th");
+            th.textContent = `Column ${i}`;
+            theadRow.appendChild(th);
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        for (let i = 0; i < rowsCount; i++) {
+            let tr = document.createElement("tr");
+            let stock = stocks[i % stocks.length];
+
+            let rowHTML = `<td class="sticky">${stock}</td>`; // Sticky first column
+
+            for (let j = 1; j < columnCount; j++) {
+                let randomValue = (Math.random() * 1000).toFixed(2);
+                rowHTML += `<td>${randomValue}</td>`;
+            }
+
+            tr.innerHTML = rowHTML;
+            fragment.appendChild(tr);
+        }
+
+        tbody.appendChild(fragment);
+
+        // Row click event for highlighting
+        tbody.addEventListener("click", function (event) {
+            let tr = event.target.closest("tr");
+            if (!tr) return;
+            document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active"));
+            tr.classList.add("active");
+        });
     });
 </script>
 
