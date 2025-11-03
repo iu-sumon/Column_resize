@@ -8,7 +8,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style> 
+    <style>
+        :root {
+            --withdraw-bg-primary: #ffffff;
+            --withdraw-bg-secondary: #f8f9fa;
+            --withdraw-bg-tertiary: #f1f3f4;
+            --withdraw-input-bg: #ffffff;
+            --withdraw-input-border: #e1e5e9;
+            --withdraw-text-primary: #2d3748;
+            --withdraw-text-secondary: #4a5568;
+            --withdraw-text-tertiary: #718096;
+            --withdraw-border-color: #e2e8f0;
+            --withdraw-hover-bg: #f7fafc;
+            --withdraw-primary: #667eea;
+            --withdraw-secondary: #764ba2;
+        }
 
         .withdraw-container {
             max-width: 1800px;
@@ -74,6 +88,7 @@
             background: var(--withdraw-input-bg);
             color: var(--withdraw-text-primary);
             font-family: inherit;
+            min-width: 180px;
         }
 
         .withdraw-date-range-wrapper .input-group-append {
@@ -82,6 +97,7 @@
             top: 50%;
             transform: translateY(-50%);
             z-index: 5;
+            pointer-events: none;
         }
 
         .withdraw-filter-group input,
@@ -308,6 +324,8 @@
         .flatpickr-calendar {
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: var(--withdraw-bg-primary);
+            border: 1px solid var(--withdraw-border-color);
         }
 
         .flatpickr-day.selected {
@@ -355,6 +373,10 @@
             .withdraw-actions .withdraw-btn {
                 width: 100%;
             }
+            
+            .withdraw-date-range-wrapper input {
+                min-width: 150px;
+            }
         }
     </style>
 </head>
@@ -368,9 +390,8 @@
                     </div>
 
                     <div class="withdraw-date-range-wrapper">
-                        <input id="withdrawStartDate" class="form-control border field-border-color bg-date-color" type="datetime"
-                            placeholder="From Date" data-enable-time="true" data-date-format="Y-m-d" data-alt-format="d-m-Y"
-                            data-inline="false" data-no-calendar="false" data-mode="single" />
+                        <input id="withdrawStartDate" class="form-control border field-border-color bg-date-color" type="text"
+                            placeholder="From Date & Time" />
                         <div class="input-group-append">
                             <span class="input-group-text" style="color: #ffff; background: #313242; border: 0px;"><i
                                     class="fa fa-calendar"></i></span>
@@ -378,9 +399,8 @@
                     </div>
 
                     <div class="withdraw-date-range-wrapper">
-                        <input id="withdrawEndDate" class="form-control border field-border-color bg-date-color" type="datetime"
-                            placeholder="To Date" data-enable-time="true" data-date-format="Y-m-d" data-alt-format="d-m-Y"
-                            data-inline="false" data-no-calendar="false" data-mode="single" />
+                        <input id="withdrawEndDate" class="form-control border field-border-color bg-date-color" type="text"
+                            placeholder="To Date & Time" />
                         <div class="input-group-append">
                             <span class="input-group-text" style="color: #ffff; background: #313242; border: 0px;"><i
                                     class="fa fa-calendar"></i></span>
@@ -465,18 +485,19 @@
     </div>
 
     <script>
-        // Initialize date pickers
+        // Initialize date pickers with time functionality
         const withdrawStartDatePicker = flatpickr("#withdrawStartDate", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             altFormat: "d-m-Y H:i",
+            altInput: true,
             defaultDate: new Date(),
             time_12hr: true,
             minuteIncrement: 1,
             onReady: function(selectedDates, dateStr, instance) {
                 var $cal = $(instance.calendarContainer);
                 if ($cal.find('.flatpickr-clear').length < 1) {
-                    $cal.append('<button class="btn btn-light my-2 flatpickr-clear">Clear</button>');
+                    $cal.append('<button type="button" class="flatpickr-clear" style="position: absolute; top: 0; right: 0; padding: 5px 10px; background: #ff6b6b; color: white; border: none; border-radius: 4px; margin: 5px;">Clear</button>');
                     $cal.find('.flatpickr-clear').on('click', function() {
                         instance.clear();
                         instance.close();
@@ -489,13 +510,14 @@
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             altFormat: "d-m-Y H:i",
+            altInput: true,
             defaultDate: new Date(),
             time_12hr: true,
             minuteIncrement: 1,
             onReady: function(selectedDates, dateStr, instance) {
                 var $cal = $(instance.calendarContainer);
                 if ($cal.find('.flatpickr-clear').length < 1) {
-                    $cal.append('<button class="btn btn-light my-2 flatpickr-clear">Clear</button>');
+                    $cal.append('<button type="button" class="flatpickr-clear" style="position: absolute; top: 0; right: 0; padding: 5px 10px; background: #ff6b6b; color: white; border: none; border-radius: 4px; margin: 5px;">Clear</button>');
                     $cal.find('.flatpickr-clear').on('click', function() {
                         instance.clear();
                         instance.close();
@@ -578,8 +600,8 @@
 
         function withdrawClearFilters() {
             $("#withdrawClientCode").val("");
-            withdrawStartDatePicker.setDate(new Date());
-            withdrawEndDatePicker.setDate(new Date());
+            withdrawStartDatePicker.clear();
+            withdrawEndDatePicker.clear();
             withdrawFilteredData = [...withdrawSampleData];
             withdrawRenderTable();
         }
@@ -628,17 +650,28 @@
             var withdrawStartDate = $("#withdrawStartDate").val();
             var withdrawEndDate = $("#withdrawEndDate").val();
 
+            console.log("Searching with:", {
+                clientCode: withdrawClientCode,
+                startDate: withdrawStartDate,
+                endDate: withdrawEndDate
+            });
+
             withdrawFilteredData = withdrawSampleData.filter((withdrawItem) => {
                 var withdrawItemDate = withdrawItem.withdrawDateTime;
                 var matchesClientCode = withdrawItem.withdrawCode.toLowerCase().includes(withdrawClientCode);
                 
-                // Date filtering
-                var matchesStartDate = !withdrawStartDate || withdrawItemDate >= withdrawStartDate;
-                var matchesEndDate = !withdrawEndDate || withdrawItemDate <= withdrawEndDate;
+                // Date filtering with time
+                var itemDateTime = new Date(withdrawItemDate.replace(' ', 'T'));
+                var startDateTime = withdrawStartDate ? new Date(withdrawStartDate.replace(' ', 'T')) : null;
+                var endDateTime = withdrawEndDate ? new Date(withdrawEndDate.replace(' ', 'T')) : null;
+                
+                var matchesStartDate = !startDateTime || itemDateTime >= startDateTime;
+                var matchesEndDate = !endDateTime || itemDateTime <= endDateTime;
                 
                 return matchesClientCode && matchesStartDate && matchesEndDate;
             });
 
+            console.log("Filtered results:", withdrawFilteredData.length);
             withdrawRenderTable();
         }
 

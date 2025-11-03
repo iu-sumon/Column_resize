@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trading Panels — Commodity / Spread / Advanced (Auto Theme)</title>
+  <meta name="description" content="Commodity order window + Spread order + Advanced options — unified modern UI with auto dark/light theme" />
+  <style>
+    /* =========================================
+       VARIABLES + THEME (auto light/dark)
+       ========================================= */
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --muted: #68707a;
+      --accent: #1976d2;
+      --accent-2: #0ea5a0;
+      --danger: #e53935;
+      --success: #2e7d32;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 20px rgba(20,24,28,0.06);
+      --radius: 12px;
+      --input-border: #d7d9dd;
+      --control-bg: #f7fafc;
+      --text: #111827;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1720;
+        --card: #0b1220;
+        --muted: #9aa3b2;
+        --accent: #4ea8ff;
+        --accent-2: #33d6c6;
+        --danger: #ff6b6b;
+        --success: #4ade80;
+        --glass: rgba(255,255,255,0.03);
+        --shadow: 0 8px 30px rgba(2,6,23,0.6);
+        --radius: 12px;
+        --input-border: rgba(255,255,255,0.06);
+        --control-bg: rgba(255,255,255,0.02);
+        --text: #e6eef8;
+      }
+    }
+
+    /* Manual theme overrides */
+    [data-theme="light"] {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --muted: #68707a;
+      --accent: #1976d2;
+      --accent-2: #0ea5a0;
+      --danger: #e53935;
+      --success: #2e7d32;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 20px rgba(20,24,28,0.06);
+      --input-border: #d7d9dd;
+      --control-bg: #f7fafc;
+      --text: #111827;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1720;
+      --card: #0b1220;
+      --muted: #9aa3b2;
+      --accent: #4ea8ff;
+      --accent-2: #33d6c6;
+      --danger: #ff6b6b;
+      --success: #4ade80;
+      --glass: rgba(255,255,255,0.03);
+      --shadow: 0 8px 30px rgba(2,6,23,0.6);
+      --input-border: rgba(255,255,255,0.06);
+      --control-bg: rgba(255,255,255,0.02);
+      --text: #e6eef8;
+    }
+
+    /* Base layout */
+    * {
+      box-sizing: border-box;
+      transition: var(--transition);
+    }
+    
+    html, body {
+      height: 100%;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), var(--bg));
+      color: var(--text);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 36px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.5;
+    }
+
+    /* Container */
+    .frame {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Left column: big tabbed card */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--input-border);
+      padding-bottom: 8px;
+    }
+
+    .tab {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition);
+    }
+    
+    .tab:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .tab.active {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .content {
+      margin-top: 10px;
+    }
+
+    /* form grid shared styles */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    
+    select, input {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
+      background: var(--control-bg);
+      color: var(--text);
+      font-size: 14px;
+      transition: var(--transition);
+    }
+    
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Margin & info row */
+    .info-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 10px;
+      background: var(--control-bg);
+      border: 1px solid var(--input-border);
+    }
+    
+    .info-box {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 13px;
+    }
+    
+    .info-col {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .info-col .label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    
+    .large {
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    /* action buttons */
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn.buy {
+      background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 75%, transparent));
+      color: white;
+    }
+    
+    .btn.sell {
+      background: linear-gradient(180deg, var(--danger), color-mix(in srgb, var(--danger) 70%, transparent));
+      color: white;
+    }
+    
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--input-border);
+      color: var(--muted);
+    }
+
+    /* Advanced panel */
+    .advanced {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 10px;
+      background: var(--control-bg);
+      display: none;
+      gap: 10px;
+    }
+    
+    .advanced.show {
+      display: grid;
+    }
+
+    /* Spread UI specific tweaks */
+    .spread-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .leg {
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
+      background: transparent;
+    }
+    
+    .leg .title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    /* Right column: compact commodity order */
+    .side-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .mini {
+      padding: 20px;
+      border-radius: 12px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .mini .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .summary {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+    
+    .pill {
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      flex: 1;
+      text-align: center;
+    }
+
+    /* responsive */
+    @media (max-width: 980px) {
+      .frame {
+        grid-template-columns: 1fr;
+      }
+      
+      body {
+        padding: 20px;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .grid-2, .spread-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .actions {
+        flex-direction: column;
+      }
+      
+      .info-box {
+        flex-direction: column;
+        gap: 16px;
+      }
+    }
+
+    /* little helpers */
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    
+    .small {
+      font-size: 13px;
+    }
+    
+    .success {
+      color: var(--success);
+    }
+    
+    .danger {
+      color: var(--danger);
+    }
+    
+    .accent {
+      color: var(--accent);
+    }
+
+    /* subtle focus */
+    select:focus, input:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+      border-color: var(--accent);
+    }
+    
+    /* Theme toggle button */
+    .theme-toggle {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .theme-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* Icons */
+    .icon {
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Animation for panel switching */
+    .panel {
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button id="themeToggle" class="theme-toggle">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4.93 4.93L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17.66 17.66L19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M6.34 17.66L4.93 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span id="themeText">Light/Dark</span>
+  </button>
+  
+  <div class="frame">
+    <!-- LEFT: Tabbed big card -->
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-panel="commodity">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Commodity Order
+        </button>
+        <button class="tab" data-panel="spread">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 17L12 9L16 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 12L12 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Spread Order
+        </button>
+        <button class="tab" data-panel="advanced">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19.4 15C19.2669 15.3031 19.1337 15.6062 19.0006 15.9094C18.619 16.6512 18.2373 17.393 17.8557 18.1348C17.651 18.5367 17.4462 18.9386 17.2415 19.3405C17.1395 19.5359 16.9634 19.7516 16.8 19.8L12 21L7.2 19.8C7.03663 19.7516 6.86046 19.5359 6.75846 19.3405C6.55375 18.9386 6.34904 18.5367 6.14433 18.1348C5.76267 17.393 5.38101 16.6512 4.99935 15.9094C4.86626 15.6062 4.73318 15.3031 4.60009 15C4.73318 14.6969 4.86626 14.3938 4.99935 14.0906C5.38101 13.3488 5.76267 12.607 6.14433 11.8652C6.34904 11.4633 6.55375 11.0614 6.75846 10.6595C6.86046 10.4641 7.03663 10.2484 7.2 10.2L12 9L16.8 10.2C16.9634 10.2484 17.1395 10.4641 17.2415 10.6595C17.4462 11.0614 17.651 11.4633 17.8557 11.8652C18.2373 12.607 18.619 13.3488 19.0006 14.0906C19.1337 14.3938 19.2669 14.6969 19.4 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Advanced Options
+        </button>
+      </div>
+
+      <div class="content">
+        <!-- COMMODITY PANEL -->
+        <div class="panel" id="commodity">
+          <div class="grid-2">
+            <div class="form-row">
+              <label>Commodity</label>
+              <select id="com_commodity">
+                <option>GOLD</option>
+                <option>SILVER</option>
+                <option>CRUDE OIL</option>
+                <option>NATURAL GAS</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Expiry</label>
+              <select id="com_expiry">
+                <option>Feb 2026</option>
+                <option>Apr 2026</option>
+                <option>Jun 2026</option>
+                <option>Aug 2026</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label>Type</label>
+              <select id="com_type">
+                <option>FUTURES</option>
+                <option>OPTIONS</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label>Order Type</label>
+              <select id="com_ordertype">
+                <option>Limit</option>
+                <option>Market</option>
+                <option>Stop Loss</option>
+                <option>Stop Limit</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label>Qty (Lots)</label>
+              <input id="com_qty" type="number" min="1" value="5" />
+            </div>
+
+            <div class="form-row">
+              <label>Price</label>
+              <input id="com_price" type="number" value="72450.00" />
+            </div>
+
+            <div class="form-row">
+              <label>Product</label>
+              <select id="com_product">
+                <option>Carry Forward</option>
+                <option>Intraday</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label>Validity</label>
+              <select id="com_validity">
+                <option>DAY</option>
+                <option>IOC</option>
+                <option>GTD</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="info-box">
+              <div class="info-col">
+                <span class="label">Margin Req:</span>
+                <span class="large" id="margin_req">-</span>
+              </div>
+              <div class="info-col">
+                <span class="label">Avail:</span>
+                <span class="large" id="avail_bal">-</span>
+              </div>
+              <div class="info-col">
+                <span class="label">MTM:</span>
+                <span class="large" id="mtm">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn buy" id="com_buy">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              BUY
+            </button>
+            <button class="btn sell" id="com_sell">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              SELL
+            </button>
+            <button class="btn ghost" id="com_reset">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 9L9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              RESET
+            </button>
+          </div>
+        </div>
+
+        <!-- SPREAD PANEL -->
+        <div class="panel" id="spread" style="display:none">
+          <div class="spread-grid">
+            <div class="leg">
+              <div class="title">BUY</div>
+              <div class="form-row">
+                <label>Commodity</label>
+                <select>
+                  <option>GOLD</option>
+                  <option>SILVER</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Expiry</label>
+                <select>
+                  <option>Feb 2026</option>
+                  <option>Apr 2026</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Quantity</label>
+                <input type="number" value="10" />
+              </div>
+              <div class="form-row">
+                <label>Product</label>
+                <select>
+                  <option>Carry Forward</option>
+                  <option>Intraday</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="leg">
+              <div class="title">SELL</div>
+              <div class="form-row">
+                <label>Commodity</label>
+                <select>
+                  <option>GOLD</option>
+                  <option>SILVER</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Expiry</label>
+                <select>
+                  <option>Apr 2026</option>
+                  <option>Jun 2026</option>
+                </select>
+              </div>
+              <div class="form-row">
+                <label>Price</label>
+                <input type="number" value="72500" />
+              </div>
+              <div class="form-row">
+                <label>Validity</label>
+                <select>
+                  <option>Day</option>
+                  <option>IOC</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-row" style="margin-top:14px">
+            <div class="info-box">
+              <div class="info-col">
+                <span class="label">Margin</span>
+                <span class="large" id="spr_margin">1,20,000</span>
+              </div>
+              <div class="info-col">
+                <span class="label">Open Pos</span>
+                <span class="small">5 Buy @ 72,400</span>
+              </div>
+              <div class="info-col">
+                <span class="label">Unrealized P/L</span>
+                <span class="small">+2,500</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn buy">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              BUY
+            </button>
+            <button class="btn sell">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              SELL
+            </button>
+            <button class="btn ghost" id="spr_reset">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 9L9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              RESET
+            </button>
+          </div>
+        </div>
+
+        <!-- ADVANCED PANEL -->
+        <div class="panel" id="advanced" style="display:none">
+          <div class="grid-2">
+            <div class="form-row">
+              <label>Order Type</label>
+              <select>
+                <option>Bracket Order</option>
+                <option>Regular</option>
+                <option>Cover Order</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Market</label>
+              <input type="number" placeholder="72450.00" />
+            </div>
+            <div class="form-row">
+              <label>Stop Loss</label>
+              <input type="number" placeholder="72300.00" />
+            </div>
+            <div class="form-row">
+              <label>Take Profit</label>
+              <input type="number" placeholder="72600.00" />
+            </div>
+            <div class="form-row">
+              <label>Trailing (points)</label>
+              <input type="number" placeholder="50" />
+            </div>
+          </div>
+
+          <div class="actions" style="margin-top:12px">
+            <button class="btn ghost" id="adv_cancel">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              CANCEL
+            </button>
+            <button class="btn" id="adv_submit" style="background:linear-gradient(180deg,var(--accent-2), color-mix(in srgb,var(--accent-2) 65%, transparent));color:#032">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              SUBMIT
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Compact commodity summary / quick order -->
+    <div class="side-card">
+      <div class="mini card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:800">Commodity Order Window</div>
+            <div class="muted small">Quick entry & summary</div>
+          </div>
+          <button class="btn ghost" id="open_advanced_side">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19.4 15C19.2669 15.3031 19.1337 15.6062 19.0006 15.9094C18.619 16.6512 18.2373 17.393 17.8557 18.1348C17.651 18.5367 17.4462 18.9386 17.2415 19.3405C17.1395 19.5359 16.9634 19.7516 16.8 19.8L12 21L7.2 19.8C7.03663 19.7516 6.86046 19.5359 6.75846 19.3405C6.55375 18.9386 6.34904 18.5367 6.14433 18.1348C5.76267 17.393 5.38101 16.6512 4.99935 15.9094C4.86626 15.6062 4.73318 15.3031 4.60009 15C4.73318 14.6969 4.86626 14.3938 4.99935 14.0906C5.38101 13.3488 5.76267 12.607 6.14433 11.8652C6.34904 11.4633 6.55375 11.0614 6.75846 10.6595C6.86046 10.4641 7.03663 10.2484 7.2 10.2L12 9L16.8 10.2C16.9634 10.2484 17.1395 10.4641 17.2415 10.6595C17.4462 11.0614 17.651 11.4633 17.8557 11.8652C18.2373 12.607 18.619 13.3488 19.0006 14.0906C19.1337 14.3938 19.2669 14.6969 19.4 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Advanced
+          </button>
+        </div>
+
+        <div style="margin-top:12px" class="grid-2">
+          <div class="form-row">
+            <label>Qty (Lots)</label>
+            <input id="side_qty" type="number" value="5" />
+          </div>
+          <div class="form-row">
+            <label>Price</label>
+            <input id="side_price" type="number" value="72450.00" />
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="pill" style="background:var(--control-bg)">
+            <div class="small muted">Margin Req</div>
+            <div id="side_margin" class="large">1,20,000</div>
+          </div>
+          <div class="pill" style="background:var(--control-bg)">
+            <div class="small muted">Avail</div>
+            <div id="side_avail" class="large">2,40,000</div>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top:12px">
+          <button class="btn buy" id="side_buy">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            BUY
+          </button>
+          <button class="btn sell" id="side_sell">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            SELL
+          </button>
+        </div>
+      </div>
+
+      <div class="mini card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700">Positions</div>
+            <div class="muted small">Open positions summary</div>
+          </div>
+          <div class="small muted">MTM <span class="success">+3,500</span></div>
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:8px;flex-direction:column">
+          <div style="display:flex;justify-content:space-between">
+            <div class="small muted">5 Buy</div>
+            <div class="small">@ 72,400</div>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <div class="small muted">Unrealized P/L</div>
+            <div class="small success">+2,500</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle functionality
+    const button = document.getElementById('themeToggle');
+    const themeText = document.getElementById('themeText');
+    const root = document.documentElement;
+    
+    // Check for saved theme preference or respect OS preference
+    const savedTheme = localStorage.getItem('theme');
+    let mode = savedTheme || 'auto';
+    
+    // Apply saved theme on load
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      root.setAttribute('data-theme', savedTheme);
+      updateThemeText(savedTheme);
+    }
+    
+    button.addEventListener('click', () => {
+      if (mode === 'auto' || mode === 'light') {
+        mode = 'dark';
+        root.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        mode = 'light';
+        root.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      }
+      updateThemeText(mode);
+    });
+    
+    function updateThemeText(currentMode) {
+      themeText.textContent = currentMode === 'dark' ? 'Light Mode' : 'Dark Mode';
+    }
+    
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = btn.dataset.panel;
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.getElementById(panel).style.display = 'block';
+      });
+    });
+    
+    // Simple UI interactions + sample calculations
+    const comPrice = document.getElementById('com_price');
+    const comQty = document.getElementById('com_qty');
+    const marginReqEl = document.getElementById('margin_req');
+    const availEl = document.getElementById('avail_bal');
+    const mtmEl = document.getElementById('mtm');
+    
+    function fmt(n) {
+      return n.toLocaleString();
+    }
+    
+    function recalc() {
+      const price = Number(comPrice.value || 0);
+      const qty = Number(comQty.value || 0);
+      // VERY SIMPLE sample margin calc: price * qty * multiplier(1) * lotSize(1)
+      const margin = Math.round(price * qty);
+      const avail = Math.round(240000 - (margin * 0.1));
+      const mtm = Math.round((Math.random() - 0.5) * 2000 + 3500);
+      marginReqEl.textContent = fmt(margin);
+      availEl.textContent = fmt(avail);
+      mtmEl.textContent = (mtm > 0 ? '+' : '') + fmt(mtm);
+      
+      // Update side panel values
+      document.getElementById('side_margin').textContent = fmt(margin);
+      document.getElementById('side_avail').textContent = fmt(avail);
+    }
+    
+    comPrice.addEventListener('input', recalc);
+    comQty.addEventListener('input', recalc);
+    recalc();
+    
+    // Advanced panel toggle from side and header
+    const advPanel = document.getElementById('advanced');
+    document.getElementById('open_advanced_side').addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-panel="advanced"]').classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+      advPanel.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    // Reset buttons
+    document.getElementById('com_reset').addEventListener('click', () => {
+      document.getElementById('com_qty').value = 5;
+      document.getElementById('com_price').value = 72450;
+      recalc();
+    });
+    
+    document.getElementById('spr_reset').addEventListener('click', () => {
+      // Reset spread form
+      document.querySelectorAll('#spread input').forEach(input => {
+        if (input.type === 'number') input.value = input.id.includes('buy') ? 10 : 72500;
+      });
+    });
+    
+    // Quick side buy/sell simple feedback
+    document.getElementById('side_buy').addEventListener('click', () => {
+      const q = Number(document.getElementById('side_qty').value);
+      const p = Number(document.getElementById('side_price').value);
+      alert('Quick BUY: ' + q + ' lots @ ' + p);
+    });
+    
+    document.getElementById('side_sell').addEventListener('click', () => {
+      const q = Number(document.getElementById('side_qty').value);
+      const p = Number(document.getElementById('side_price').value);
+      alert('Quick SELL: ' + q + ' lots @ ' + p);
+    });
+    
+    // small UX: prevent scroll on number input arrows when focused
+    document.querySelectorAll('input[type=number]').forEach(i => {
+      i.addEventListener('wheel', (e) => { e.preventDefault(); });
+    });
+    
+    // Update side panel when values change
+    document.getElementById('side_qty').addEventListener('input', recalc);
+    document.getElementById('side_price').addEventListener('input', recalc);
+  </script>
+</body>
+</html>

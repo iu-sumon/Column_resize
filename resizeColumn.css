@@ -1,18 +1,140 @@
-.rc-handle-container {
-    position: relative;
-  }
-  .rc-handle {
-    position: absolute;
-    width: 7px;
-    cursor: ew-resize;
-    margin-left: -3px;
-    z-index: 2;
-  }
-  table.rc-table-resizing {
-    cursor: ew-resize;
-  }
-  table.rc-table-resizing thead,
-  table.rc-table-resizing thead > th,
-  table.rc-table-resizing thead > th > a {
-    cursor: ew-resize;
-  }
+
+
+/* depth-theme-2 */
+   /* 🌈 Apply gradient across entire row */
+    .depth-theme-2 tr:nth-child(1) {
+      background: linear-gradient(to right, #059669 0%, #ff006e 100%);
+    }
+    .depth-theme-2 tr:nth-child(2) {
+      background: linear-gradient(to right, #059669cc 0%, #ff006ecc 100%);
+    }
+    .depth-theme-2 tr:nth-child(3) {
+      background: linear-gradient(to right, #059669b3 0%, #ff006eb3 100%);
+    }
+    .depth-theme-2 tr:nth-child(4) {
+      background: linear-gradient(to right, #05966999 0%, #ff006e99 100%);
+    }
+    .depth-theme-2 tr:nth-child(5) {
+      background: linear-gradient(to right, #05966980 0%, #ff006e80 100%);
+    }
+    .depth-theme-2 tr:nth-child(6) {
+      background: linear-gradient(to right, #05966966 0%, #ff006e66 100%);
+    }
+    .depth-theme-2 tr:nth-child(7) {
+      background: linear-gradient(to right, #0596694d 0%, #ff006e4d 100%);
+    }
+    .depth-theme-2 tr:nth-child(8) {
+      background: linear-gradient(to right, #05966933 0%, #ff006e33 100%);
+    }
+
+    /* Highlight BID & ASK columns */
+    .depth-theme-2 td:nth-child(4) {
+      font-weight: bold;
+      color: #a6ffb4;
+    }
+    .depth-theme-2 td:nth-child(5) {
+      font-weight: bold;
+      color: #ff9cab;
+    }
+
+    .depth-theme-2 .table-dark.table-striped tbody tr:nth-of-type(even) {
+      background-color: transparent;
+     }   
+	 
+	 
+	 
+	 
+
+
+
+
+/* theme-1 */
+/* ODD ROW */
+.depth-theme-1 tr:nth-child(odd) td:nth-child(1),
+.depth-theme-1 tr:nth-child(odd) td:nth-child(2) {
+  background-color: #164e9f !important;
+}
+.depth-theme-1 tr:nth-child(odd) td:nth-child(3),
+.depth-theme-1 tr:nth-child(odd) td:nth-child(4) {
+  background-color: #164e9f !important;
+}
+.depth-theme-1 tr:nth-child(odd) td:nth-child(5),
+.depth-theme-1 tr:nth-child(odd) td:nth-child(6) {
+  background-color: #a92b32 !important;
+}
+.depth-theme-1 tr:nth-child(odd) td:nth-child(7),
+.depth-theme-1 tr:nth-child(odd) td:nth-child(8) {
+  background-color: #a92b32 !important;
+}
+
+/*EVEN ROW */
+.depth-theme-1 tr:nth-child(even) td:nth-child(1),
+.depth-theme-1 tr:nth-child(even) td:nth-child(2) {
+  background-color: #133570 !important;
+}
+.depth-theme-1 tr:nth-child(even) td:nth-child(3),
+.depth-theme-1 tr:nth-child(even) td:nth-child(4) {
+  background-color: #133570 !important;
+}
+.depth-theme-1 tr:nth-child(even) td:nth-child(5),
+.depth-theme-1 tr:nth-child(even) td:nth-child(6) {
+  background-color: #7a1f24 !important;
+}
+.depth-theme-1 tr:nth-child(even) td:nth-child(7),
+.depth-theme-1 tr:nth-child(even) td:nth-child(8) {
+  background-color: #7a1f24 !important;
+}
+
+.depth-theme-1 .progress-bar-success-custom {
+  background-color: #164e9f !important;
+}
+.depth-theme-1 .progress-bar-danger-custom {
+  background-color: #a92b32 !important;
+}
+
+
+
+/* depth-theme-3 */
+/*ODD ROW */
+.depth-theme-3 tr:nth-child(odd) td:nth-child(1),
+.depth-theme-3 tr:nth-child(odd) td:nth-child(2) {
+  background-color: #2d3641 !important;
+}
+.depth-theme-3 tr:nth-child(odd) td:nth-child(3),
+.depth-theme-3 tr:nth-child(odd) td:nth-child(4) {
+  background-color: #3f495bdb !important;
+}
+.depth-theme-3 tr:nth-child(odd) td:nth-child(5),
+.depth-theme-3 tr:nth-child(odd) td:nth-child(6) {
+  background-color: #3f495bdb !important;
+}
+.depth-theme-3 tr:nth-child(odd) td:nth-child(7),
+.depth-theme-3 tr:nth-child(odd) td:nth-child(8) {
+  background-color: #2d3641 !important;
+}
+
+/* EVEN ROW */
+.depth-theme-3 tr:nth-child(even) td:nth-child(1),
+.depth-theme-3 tr:nth-child(even) td:nth-child(2) {
+  background-color: #171719 !important;
+}
+.depth-theme-3 tr:nth-child(even) td:nth-child(3),
+.depth-theme-3 tr:nth-child(even) td:nth-child(4) {
+  background-color: #17181a !important;
+}
+.depth-theme-3 tr:nth-child(even) td:nth-child(5),
+.depth-theme-3 tr:nth-child(even) td:nth-child(6) {
+  background-color: #17181a !important;
+}
+.depth-theme-3 tr:nth-child(even) td:nth-child(7),
+.depth-theme-3 tr:nth-child(even) td:nth-child(8) {
+  background-color: #171719 !important;
+}
+
+.depth-theme-3 .progress-bar-success-custom {
+  background-color: #37404f !important;
+}
+
+.depth-theme-3 .progress-bar-danger-custom {
+  background-color: #1f262d !important;
+}

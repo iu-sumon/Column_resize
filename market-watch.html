@@ -1,161 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Topbar</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-      body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #333;
-}
+<style>
 
-.topbar {
-    background-color: #1d1d1d;
-    color: white;
-    padding: 10px 20px;
-}
+</style>
 
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #00bcd4;
-}
-
-.market-watch {
-    color: #888;
-    margin-left: 10px;
-}
-
-.badge-warning {
-    background-color: #ffd700;
-    color: black;
-    padding: 5px 10px;
-    border-radius: 5px;
-}
-
-.index-dropdown {
-    width: 100px;
-}
-
-.index-value {
-    font-size: 20px;
-}
-
-.index-change {
-    color: green;
-}
-
-.btn {
-    padding: 5px 10px;
-}
-
-.search-symbol {
-    width: 120px;
-}
-
-.total-volume, .total-trade {
-    font-size: 12px;
-}
-
-.trade-bar {
-    display: flex;
-    width: 100px;
-    height: 10px;
-}
-
-.trade-bar .bar {
-    width: 50%;
-}
-
-.green {
-    background-color: green;
-}
-
-.red {
-    background-color: red;
-}
-
-.dealer-info span {
-    font-size: 12px;
-}
-
-.alert-icon, .notification-icon, .settings-icon {
-    cursor: pointer;
-    margin-left: 10px;
-}
-
-.alert-icon {
-    color: red;
-}
-
-.notification-icon {
-    color: grey;
-}
-
-.settings-icon {
-    color: #888;
-}
-
-@media (max-width: 768px) {
-    .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .center-section, .right-section {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-top: 10px;
-    }
-}
-
-    </style>
-</head>
-<body>
-    <div class="container-fluid topbar">
-        <div class="row align-items-center">
-            <div class="col-md-3 d-flex align-items-center">
-                <div class="logo">UFTFAST</div>
-                <div class="market-watch ml-2">Market-watch</div>
-            </div>
-            <div class="col-md-6 d-flex align-items-center justify-content-center">
-                <div class="badge badge-warning">DSE</div>
-                <select class="custom-select mx-2 index-dropdown">
-                    <option value="dsex">DSEX</option>
-                </select>
-                <div class="index-value ml-2">1723.61</div>
-                <div class="index-change ml-2">+10.14 (+0.59%)</div>
-            </div>
-            <div class="col-md-3 d-flex align-items-center justify-content-end">
-                <button class="btn btn-success btn-sm mx-1">BUY</button>
-                <button class="btn btn-danger btn-sm mx-1">SELL</button>
-                <button class="btn btn-primary btn-sm mx-1">Limit Request</button>
-                <div class="badge badge-warning mx-1">TDA</div>
-                <input type="text" class="form-control form-control-sm mx-1 search-symbol" placeholder="Search Symbol">
-                <div class="total-volume mx-2">Total Volume: -</div>
-                <div class="total-trade mx-2">Total Trade: -</div>
-                <div class="trade-bar d-flex align-items-center mx-1">
-                    <div class="bar green"></div>
-                    <div class="bar red"></div>
-                </div>
-                <div class="dealer-info d-flex flex-column mx-2">
-                    <span>Dealer ID: UFTTRDR051</span>
-                    <span>Total: 1,91,30,13,272.6</span>
-                </div>
-                <div class="alerts d-flex align-items-center">
-                    <div class="alert-icon mx-1">!</div>
-                    <div class="notification-icon mx-1">0</div>
-                    <div class="settings-icon mx-1">⚙</div>
-                </div>
-            </div>
-        </div>
+<!-- ==================== Approval/Rejection Modal ==================== -->
+<div class="withdraw-action-modal-overlay" id="withdraw-action-approval-modal">
+  <div class="withdraw-action-modal-container">
+    <div class="withdraw-action-modal-header">
+      <h3>
+        <i class="fa fa-file-invoice-dollar"></i>
+        <span id="withdraw-action-modal-title">Withdrawal Action</span>
+      </h3>
+      <button class="withdraw-action-modal-close" onclick="withdrawActionCloseModal()">
+        <i class="fa fa-times"></i>
+      </button>
     </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+
+    <div class="withdraw-action-modal-body">
+      <!-- Status Selection -->
+      <div class="withdraw-action-form-group">
+        <label>
+          Status <span class="withdraw-action-required">*</span>
+        </label>
+        <select id="withdraw-action-modal-status">
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <!-- Remarks Input -->
+      <div class="withdraw-action-form-group">
+        <label>
+          Remarks <span class="withdraw-action-required">*</span>
+        </label>
+        <textarea
+          id="withdraw-action-modal-remarks"
+          placeholder="Enter remarks for this action..."
+          maxlength="200"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="withdraw-action-modal-footer">
+      <button
+        class="withdraw-action-btn withdraw-action-btn-cancel"
+        onclick="withdrawActionCloseModal()"
+      >
+        <i class="fa fa-times"></i> Cancel
+      </button>
+      <button
+        class="withdraw-action-btn withdraw-action-btn-submit"
+        id="withdraw-action-modal-submit-btn"
+        onclick="withdrawActionSubmit()"
+      >
+        <i class="fa fa-check"></i> Submit
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==================== Withdraw Action Modal JS ==================== //
+
+  // ==================== API Update Function ==================== //
+ 
+</script>

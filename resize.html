@@ -1,182 +1,633 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sticky Column with Shadow Fix</title>
-    <style>
-        :root {
-            --borderColor: #333333;
-            --stickyBackground: #282828;
-            --headerBackground: #333;
-            --rowEvenBackground: rgba(125, 125, 125, 0.18);
-            --rowOddBackground: rgba(0, 0, 0, 0.26);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Withdraw Approval System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Existing styles remain the same */
+    .withdraw-container {
+      max-width: 1800px;
+      margin: 0 auto;
+      background: #1a1a2e;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 30px;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #1e1e1e;
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
+    .withdraw-main-content {
+      padding: 25px;
+    }
 
-        .table-wrapper {
-            height: 500px; /* Fixed height for scrolling */
-            border: 1px solid var(--borderColor);
-            overflow: auto;
-        }
+    .withdraw-table-wrapper {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #1a1a2e;
+    }
 
-        table {
-            width: 2500px; /* Ensures horizontal scrolling */
-            border-spacing: 0;
-            border-collapse: collapse;
-        }
+    .withdraw-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1a1a2e;
+      min-width: 800px;
+    }
 
-        thead {
-            font-size: 12px;
-             
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
+    .withdraw-thead {
+      background: #16213e;
+      border-bottom: 2px solid #333;
+    }
 
-        tbody {
-            font-size: 14px;
-        }
+    .withdraw-th {
+      padding: 10px;
+      text-align: left;
+      font-weight: 600;
+      color: #fff;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
 
-        th, td {
-            padding: 8px 5px;
-            white-space: nowrap;
-            border-bottom: 1px solid var(--borderColor);
-            background-color: transparent;
-        }
+    .withdraw-td {
+      padding: 7px;
+      font-size: 14px;
+      color: #ccc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
+    .withdraw-tbody tr {
+      transition: all 0.3s ease;
+      background: #1a1a2e;
+      border-bottom: 1px solid #333;
+    }
 
-        /* Sticky Header */
-        tr.sticky {
-            position: sticky;
-            top: 0;
-            z-index: 1;
-            background: var(--headerBackground);
-            box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-        }
+    .withdraw-tbody tr:hover {
+      background: #252541;
+    }
 
-        /* Sticky Column */
-        th.sticky,
-        td.sticky {
-            position: sticky;
-            left: 0;
-            background: var(--stickyBackground);
-            z-index: 2; /* Ensure sticky column is above rows */
-        }
+    .withdraw-amount {
+      font-weight: 600;
+      color: #667eea;
+    }
 
-        /* Faux shadow for sticky column */
-        th.sticky::after,
-        td.sticky::after {
-            content: "";
-            position: absolute;
-            right: -6px;
-            top: 0;
-            bottom: -1px;
-            width: 5px;
-            border-left: 1px solid var(--borderColor);
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
-        }
+    /* Updated Action Buttons with Font Awesome Icons */
+    .withdraw-action-btn {
+      padding: 6px 12px;
+      margin: 0 3px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
 
-        th.sticky::before,
-        td.sticky::before {
-            content: "";
-            position: absolute;
-            left: -6px;
-            top: 0;
-            bottom: -1px;
-            width: 5px;
-            border-right: 1px solid var(--borderColor);
-            background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.08) 100%);
-        }
+    .withdraw-action-btn i {
+      font-size: 12px;
+    }
 
-        /* Striped Rows */
-        tbody tr:nth-child(even) {
-            background-color: var(--rowEvenBackground);
-        }
+    .withdraw-edit {
+      background-color: #28a745;
+      color: white;
+    }
 
-        tbody tr:nth-child(odd) {
-            background-color: var(--rowOddBackground);
-        }
+    .withdraw-edit:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
 
-        /* Highlight Selected Row */
-        tr.active {
-            background: #00509d !important;
-        }
+    .withdraw-delete {
+      background-color: #dc3545;
+      color: white;
+    }
 
-        tr.active td.sticky {
-            background: #004080 !important;
-        }
-    </style>
+    .withdraw-delete:hover {
+      background-color: #c82333;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    /* Status Colors */
+    .status-pending {
+      color: #ffc107;
+      font-weight: 600;
+    }
+
+    .status-approved {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    .status-rejected {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    /* Modal Overlay */
+    .withdraw-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .withdraw-modal-overlay.active {
+      display: flex;
+    }
+
+    /* Modal Container */
+    .withdraw-modal-container {
+      background: #1a1a2e;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      animation: modalSlideIn 0.3s ease;
+      border: 2px solid #667eea;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Modal Header */
+    .withdraw-modal-header {
+      padding: 20px 24px;
+      border-bottom: 2px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .withdraw-modal-header h3 {
+      margin: 0;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .withdraw-modal-close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .withdraw-modal-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: rotate(90deg);
+    }
+
+    /* Modal Body */
+    .withdraw-modal-body {
+      padding: 24px;
+    }
+
+    .withdraw-form-group {
+      margin-bottom: 20px;
+    }
+
+    .withdraw-form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .withdraw-form-group label .required {
+      color: #ff6b6b;
+      margin-left: 4px;
+    }
+
+    .withdraw-form-group select,
+    .withdraw-form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #16213e;
+      color: #fff;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .withdraw-form-group select:focus,
+    .withdraw-form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .withdraw-form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    /* Status Select Styling */
+    .withdraw-form-group select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 35px;
+    }
+
+    .withdraw-form-group select option {
+      background: #16213e;
+      color: #fff;
+      padding: 10px;
+    }
+
+    /* Modal Footer */
+    .withdraw-modal-footer {
+      padding: 20px 24px;
+      border-top: 2px solid #333;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      background: #16213e;
+    }
+
+    .withdraw-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .withdraw-btn-cancel {
+      background: #6c757d;
+      color: white;
+    }
+
+    .withdraw-btn-cancel:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+
+    .withdraw-btn-submit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .withdraw-btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .withdraw-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Client Info Display */
+    .withdraw-client-info {
+      background: #16213e;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .withdraw-client-info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .withdraw-client-info-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .withdraw-client-info-label {
+      color: #999;
+      font-weight: 500;
+    }
+
+    .withdraw-client-info-value {
+      color: #fff;
+      font-weight: 600;
+    }
+  </style>
 </head>
-<body>
+<body style="background: #0f0f1e; color: #fff; font-family: Arial, sans-serif; padding: 20px;">
 
-<div class="table-wrapper">
-    <table id="stockTable">
-        <thead>
-            <tr class="sticky">
-                <th class="sticky">Stock Name</th>
-                <!-- Dynamically generated headers -->
+  <div class="withdraw-container">
+    <div class="withdraw-main-content">
+      <h2 style="margin-bottom: 20px;">Withdrawal Requests</h2>
+      
+      <div class="withdraw-table-wrapper">
+        <table class="withdraw-table">
+          <thead class="withdraw-thead">
+            <tr>
+              <th class="withdraw-th">#</th>
+              <th class="withdraw-th">Client Code</th>
+              <th class="withdraw-th">Name</th>
+              <th class="withdraw-th">Date & Time</th>
+              <th class="withdraw-th">Amount</th>
+              <th class="withdraw-th">User</th>
+              <th class="withdraw-th">Status</th>
+              <th class="withdraw-th">Action</th>
             </tr>
-        </thead>
-        <tbody id="stockBody">
-            <!-- Dynamically generated rows -->
-        </tbody>
-    </table>
-</div>
+          </thead>
+          <tbody class="withdraw-tbody" id="withdrawTableBody">
+            <!-- Sample data for demonstration -->
+            <tr>
+              <td class="withdraw-td">1</td>
+              <td class="withdraw-td">CLI001</td>
+              <td class="withdraw-td">John Doe</td>
+              <td class="withdraw-td">03-11-2025 10:30 AM</td>
+              <td class="withdraw-td withdraw-amount">50,000.00</td>
+              <td class="withdraw-td">admin</td>
+              <td class="withdraw-td status-pending">pending</td>
+              <td class="withdraw-td">
+                <button class="withdraw-action-btn withdraw-edit" onclick="openApprovalModal(0, 'approved')">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+                <button class="withdraw-action-btn withdraw-delete" onclick="openApprovalModal(0, 'rejected')">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td class="withdraw-td">2</td>
+              <td class="withdraw-td">CLI002</td>
+              <td class="withdraw-td">Jane Smith</td>
+              <td class="withdraw-td">03-11-2025 11:45 AM</td>
+              <td class="withdraw-td withdraw-amount">75,000.00</td>
+              <td class="withdraw-td">admin</td>
+              <td class="withdraw-td status-pending">pending</td>
+              <td class="withdraw-td">
+                <button class="withdraw-action-btn withdraw-edit" onclick="openApprovalModal(1, 'approved')">
+                  <i class="fas fa-check"></i> Approve
+                </button>
+                <button class="withdraw-action-btn withdraw-delete" onclick="openApprovalModal(1, 'rejected')">
+                  <i class="fas fa-times"></i> Reject
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const tbody = document.getElementById("stockBody");
-        const theadRow = document.querySelector("#stockTable thead tr");
+  <!-- Approval/Rejection Modal -->
+  <div class="withdraw-modal-overlay" id="withdrawApprovalModal">
+    <div class="withdraw-modal-container">
+      <div class="withdraw-modal-header">
+        <h3>
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span id="modalTitle">Withdrawal Action</span>
+        </h3>
+        <button class="withdraw-modal-close" onclick="closeApprovalModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="withdraw-modal-body">
+        <!-- Client Information -->
+        <div class="withdraw-client-info">
+          <div class="withdraw-client-info-row">
+            <span class="withdraw-client-info-label">Client Code:</span>
+            <span class="withdraw-client-info-value" id="modalClientCode">-</span>
+          </div>
+          <div class="withdraw-client-info-row">
+            <span class="withdraw-client-info-label">Client Name:</span>
+            <span class="withdraw-client-info-value" id="modalClientName">-</span>
+          </div>
+          <div class="withdraw-client-info-row">
+            <span class="withdraw-client-info-label">Amount:</span>
+            <span class="withdraw-client-info-value" id="modalAmount">-</span>
+          </div>
+        </div>
 
-        const columnCount = 35; // More than 30 columns
-        const rowsCount = 1000; // Large dataset
-        const stocks = ["AAPL", "GOOGL", "MSFT", "TSLA", "AMZN", "NFLX", "FB", "NVDA"];
+        <!-- Status Selection -->
+        <div class="withdraw-form-group">
+          <label>
+            Status <span class="required">*</span>
+          </label>
+          <select id="modalStatus">
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
 
-        // Create table headers dynamically
-        for (let i = 1; i < columnCount; i++) {
-            let th = document.createElement("th");
-            th.textContent = `Column ${i}`;
-            theadRow.appendChild(th);
-        }
+        <!-- Remarks Input -->
+        <div class="withdraw-form-group">
+          <label>
+            Remarks <span class="required">*</span>
+          </label>
+          <textarea 
+            id="modalRemarks" 
+            placeholder="Enter remarks for this action..."
+            maxlength="200"
+          ></textarea>
+        </div>
+      </div>
 
-        const fragment = document.createDocumentFragment();
+      <div class="withdraw-modal-footer">
+        <button class="withdraw-btn withdraw-btn-cancel" onclick="closeApprovalModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="withdraw-btn withdraw-btn-submit" id="modalSubmitBtn" onclick="submitApprovalAction()">
+          <i class="fas fa-check"></i> Submit
+        </button>
+      </div>
+    </div>
+  </div>
 
-        for (let i = 0; i < rowsCount; i++) {
-            let tr = document.createElement("tr");
-            let stock = stocks[i % stocks.length];
+  <script>
+    
 
-            let rowHTML = `<td class="sticky">${stock}</td>`; // Sticky first column
+    // Modal state
+    let currentRequestIndex = null;
+    let currentActionType = null;
 
-            for (let j = 1; j < columnCount; j++) {
-                let randomValue = (Math.random() * 1000).toFixed(2);
-                rowHTML += `<td>${randomValue}</td>`;
-            }
+    // Open Modal Function
+    function openApprovalModal(index, actionType) {
+      const request = withdrawFilteredData[index];
+      currentRequestIndex = index;
+      currentActionType = actionType;
 
-            tr.innerHTML = rowHTML;
-            fragment.appendChild(tr);
-        }
+      // Update modal title and icon
+      const modalTitle = document.getElementById('modalTitle');
+      if (actionType === 'approved') {
+        modalTitle.innerHTML = '<i class="fas fa-check-circle"></i> Approve Withdrawal';
+      } else {
+        modalTitle.innerHTML = '<i class="fas fa-times-circle"></i> Reject Withdrawal';
+      }
 
-        tbody.appendChild(fragment);
+      // Populate client information
+      document.getElementById('modalClientCode').textContent = request.withdrawCode;
+      document.getElementById('modalClientName').textContent = request.withdrawName;
+      document.getElementById('modalAmount').textContent = request.withdrawAmount;
 
-        // Row click event for highlighting
-        tbody.addEventListener("click", function (event) {
-            let tr = event.target.closest("tr");
-            if (!tr) return;
-            document.querySelectorAll("tbody tr").forEach(row => row.classList.remove("active"));
-            tr.classList.add("active");
+      // Set status dropdown
+      document.getElementById('modalStatus').value = actionType;
+
+      // Set default remarks based on action type
+      const defaultRemarks = actionType === 'approved' 
+        ? 'Withdrawal approved by admin' 
+        : 'Withdrawal rejected by admin';
+      document.getElementById('modalRemarks').value = defaultRemarks;
+
+      // Show modal
+      document.getElementById('withdrawApprovalModal').classList.add('active');
+    }
+
+    // Close Modal Function
+    function closeApprovalModal() {
+      document.getElementById('withdrawApprovalModal').classList.remove('active');
+      currentRequestIndex = null;
+      currentActionType = null;
+      
+      // Reset form
+      document.getElementById('modalStatus').value = 'approved';
+      document.getElementById('modalRemarks').value = '';
+    }
+
+    // Submit Action Function
+    function submitApprovalAction() {
+      const status = document.getElementById('modalStatus').value;
+      const remarks = document.getElementById('modalRemarks').value.trim();
+
+      // Validate remarks
+      if (!remarks) {
+        alert('Please enter remarks for this action.');
+        return;
+      }
+
+      if (currentRequestIndex === null) {
+        alert('Invalid request. Please try again.');
+        return;
+      }
+
+      // Disable submit button
+      const submitBtn = document.getElementById('modalSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+      // Call the actual handler
+      handleWithdrawAction(currentRequestIndex, status, remarks);
+    }
+
+    // Updated handleWithdrawAction to accept remarks parameter
+    function handleWithdrawAction(index, actionType, remarks) {
+      const request = withdrawFilteredData[index];
+      
+      // Simulate API call
+      setTimeout(() => {
+        console.log('Processing withdrawal action:', {
+          clientCode: request.withdrawCode,
+          amount: request.withdrawAmount,
+          status: actionType,
+          remarks: remarks
         });
+
+        // Update request status locally
+        request.status = actionType;
+        request.remarks = remarks;
+
+        // Update the table row
+        const row = document.querySelectorAll('.withdraw-tbody tr')[index];
+        const statusCell = row.querySelector('.withdraw-td:nth-child(7)');
+        const actionCell = row.querySelector('.withdraw-td:nth-child(8)');
+
+        statusCell.className = `withdraw-td status-${actionType}`;
+        statusCell.textContent = actionType;
+
+        if (actionType === 'approved') {
+          actionCell.innerHTML = '<span style="color: #28a745; font-weight: 600;"><i class="fas fa-check-circle"></i> Approved</span>';
+        } else {
+          actionCell.innerHTML = '<span style="color: #dc3545; font-weight: 600;"><i class="fas fa-times-circle"></i> Rejected</span>';
+        }
+
+        // Show success message
+        const message = actionType === 'approved' 
+          ? 'Withdrawal request approved successfully!' 
+          : 'Withdrawal request rejected successfully!';
+        
+        alert(message);
+
+        // Close modal
+        closeApprovalModal();
+
+        // Re-enable submit button
+        const submitBtn = document.getElementById('modalSubmitBtn');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> Submit';
+      }, 1000);
+    }
+
+    // Close modal on overlay click
+    document.getElementById('withdrawApprovalModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeApprovalModal();
+      }
     });
-</script>
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeApprovalModal();
+      }
+    });
+
+    // Update remarks when status changes
+    document.getElementById('modalStatus').addEventListener('change', function(e) {
+      const remarksField = document.getElementById('modalRemarks');
+      if (e.target.value === 'approved') {
+        remarksField.value = 'Withdrawal approved by admin';
+      } else {
+        remarksField.value = 'Withdrawal rejected by admin';
+      }
+    });
+  </script>
 
 </body>
 </html>

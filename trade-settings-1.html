@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --withdraw-bg-primary: #ffffff;
+            --withdraw-bg-secondary: #f8f9fa;
+            --withdraw-bg-tertiary: #f0f2f5;
+            --withdraw-text-primary: #1a1a1a;
+            --withdraw-text-secondary: #555555;
+            --withdraw-text-tertiary: #999999;
+            --withdraw-border-color: #e0e0e0;
+            --withdraw-gradient-start: #667eea;
+            --withdraw-gradient-end: #764ba2;
+            --withdraw-input-bg: #ffffff;
+            --withdraw-input-border: #e0e0e0;
+            --withdraw-hover-bg: #f8f9fa;
+            --withdraw-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body.withdraw-dark-mode {
+            --withdraw-bg-primary: #1e1e2e;
+            --withdraw-bg-secondary: #2d2d3f;
+            --withdraw-bg-tertiary: #3a3a4f;
+            --withdraw-text-primary: #ffffff;
+            --withdraw-text-secondary: #b0b0b0;
+            --withdraw-text-tertiary: #808080;
+            --withdraw-border-color: #444455;
+            --withdraw-input-bg: #2d2d3f;
+            --withdraw-input-border: #444455;
+            --withdraw-hover-bg: #3a3a4f;
+            --withdraw-shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .withdraw-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--withdraw-bg-primary);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--withdraw-shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .withdraw-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .withdraw-header-left h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .withdraw-header-left p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .withdraw-theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .withdraw-theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .withdraw-main-content {
+            padding: 30px;
+        }
+
+        .withdraw-controls-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .withdraw-filters {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .withdraw-filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .withdraw-filter-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--withdraw-text-primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .withdraw-client-code-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .withdraw-client-code-wrapper input {
+            flex: 1;
+        }
+
+        .withdraw-client-code-wrapper .withdraw-btn-clear {
+            height: 36px;
+            padding: 0 13px;
+        }
+
+        .withdraw-date-range-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .withdraw-date-range-wrapper input {
+            flex: 1;
+        }
+
+        .withdraw-filter-group input,
+        .withdraw-filter-group select {
+            width: 100%;
+            padding: 7px 14px;
+            border: 2px solid var(--withdraw-input-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--withdraw-input-bg);
+            color: var(--withdraw-text-primary);
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .withdraw-filter-group input:focus,
+        .withdraw-filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .withdraw-date-range-wrapper input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Red star for required labels */
+        label::after {
+            content: attr(data-required);
+            color: red;
+            margin-left: 4px;
+            font-weight: bold;
+        }
+
+        .withdraw-btn-clear {
+            padding: 12px 16px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .withdraw-btn-clear:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .withdraw-actions {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .withdraw-btn {
+            padding: 7px 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .withdraw-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .withdraw-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .withdraw-btn-secondary {
+            background: var(--withdraw-bg-tertiary);
+            color: var(--withdraw-text-primary);
+            border: 2px solid var(--withdraw-border-color);
+        }
+
+        .withdraw-btn-secondary:hover {
+            background: var(--withdraw-hover-bg);
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .withdraw-table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--withdraw-border-color);
+            background: var(--withdraw-bg-primary);
+        }
+
+        .withdraw-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--withdraw-bg-primary);
+        }
+
+        .withdraw-thead {
+            background: var(--withdraw-bg-secondary);
+            border-bottom: 2px solid var(--withdraw-border-color);
+        }
+
+        .withdraw-th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--withdraw-text-primary);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .withdraw-td {
+            padding: 16px;
+            border-bottom: 1px solid var(--withdraw-border-color);
+            font-size: 14px;
+            color: var(--withdraw-text-secondary);
+        }
+
+        .withdraw-tbody tr {
+            transition: all 0.3s ease;
+            background: var(--withdraw-bg-primary);
+        }
+
+        .withdraw-tbody tr:hover {
+            background: var(--withdraw-hover-bg);
+        }
+
+        .withdraw-amount {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .withdraw-empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--withdraw-text-tertiary);
+        }
+
+        .withdraw-empty-state p {
+            font-size: 16px;
+        }
+
+        /* Modal */
+        .withdraw-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: withdraw-fadeIn 0.3s ease;
+        }
+
+        .withdraw-modal-overlay.withdraw-active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .withdraw-modal {
+            background: var(--withdraw-bg-primary);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px var(--withdraw-shadow);
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: withdraw-slideUp 0.3s ease;
+        }
+
+        .withdraw-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--withdraw-border-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .withdraw-modal-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .withdraw-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .withdraw-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .withdraw-modal-content {
+            padding: 24px;
+        }
+
+        .withdraw-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .withdraw-form-row.withdraw-full {
+            grid-template-columns: 1fr;
+        }
+
+        .withdraw-form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .withdraw-form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--withdraw-text-primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .withdraw-form-group input,
+        .withdraw-form-group textarea {
+            padding: 12px 14px;
+            border: 2px solid var(--withdraw-input-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--withdraw-input-bg);
+            color: var(--withdraw-text-primary);
+            transition: all 0.3s ease;
+        }
+
+        #withdrawNarration{
+            height: 85px;
+        }
+
+        .withdraw-form-group input:focus,
+        .withdraw-form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .withdraw-modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--withdraw-border-color);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .withdraw-modal-footer .withdraw-btn {
+            padding: 12px 32px;
+            min-width: 120px;
+        }
+
+        @keyframes withdraw-fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes withdraw-slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="withdraw-container">
+        <div class="withdraw-header">
+            <div class="withdraw-header-left">
+                <h1>💰 Transaction Manager</h1>
+                <p>View and manage all client transactions</p>
+            </div>
+            <button class="withdraw-theme-toggle" onclick="withdrawToggleTheme()" title="Toggle Dark Mode">🌙</button>
+        </div>
+
+        <div class="withdraw-main-content">
+            <div class="withdraw-controls-section">
+                <div class="withdraw-filters">
+                    <div class="withdraw-filter-group">
+                        <div class="withdraw-date-range-wrapper">
+                            <input type="date" id="withdrawStartDate">
+                            <input type="date" id="withdrawEndDate">
+                        </div>
+                    </div>
+                    <div class="withdraw-filter-group">
+                        <div class="withdraw-client-code-wrapper">
+                            <input type="text" id="withdrawClientCode" placeholder="Enter client code...">
+                            <button class="withdraw-btn-clear" onclick="withdrawClearClientFilter()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="withdraw-actions">
+                    <button class="withdraw-btn withdraw-btn-primary" onclick="withdrawOpenWithdrawRequest()">Withdraw Request</button>
+                    <button class="withdraw-btn withdraw-btn-secondary" onclick="withdrawDownloadData()">Download</button>
+                </div>
+            </div>
+
+            <div class="withdraw-table-wrapper">
+                <table class="withdraw-table table-dark table-striped" id="withdrawDataTable">
+                    <thead class="withdraw-thead">
+                        <tr>
+                            <th class="withdraw-th">Client Code</th>
+                            <th class="withdraw-th">Name</th>
+                            <th class="withdraw-th">Date & Time</th>
+                            <th class="withdraw-th">Amount</th>
+                            <th class="withdraw-th">User</th>
+                        </tr>
+                    </thead>
+                    <tbody class="withdraw-tbody" id="withdrawTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="withdraw-modal-overlay">
+        <div class="withdraw-modal">
+            <div class="withdraw-modal-header">
+                <h2>New Withdraw</h2>
+                <button class="withdraw-modal-close" onclick="withdrawCloseWithdrawModal()">×</button>
+            </div>
+            <div class="withdraw-modal-content">
+                <form onsubmit="withdrawSubmitWithdrawRequest(event)">
+                    <div class="withdraw-form-row">
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Date</label>
+                            <input type="date" id="withdrawDate" required>
+                        </div>
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Client Code</label>
+                            <input type="text" id="withdrawClientCode" required>
+                        </div>
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Name</label>
+                            <input type="text" id="withdrawBOID" required>
+                        </div>
+
+                    </div>
+
+                    <div class="withdraw-form-row">
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Current Balance</label>
+                            <input type="text" id="withdrawBankName" required>
+                        </div>
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Net Balance</label>
+                            <input type="text" id="withdrawBranchName" required>
+                        </div>
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Withdraw Amount</label>
+                            <input type="number" id="withdrawAmount" required>
+                        </div>
+                    </div>
+
+                    <div class="withdraw-form-row withdraw-full">
+                        <div class="withdraw-form-group">
+                            <label data-required="*">Narration</label>
+                            <textarea id="withdrawNarration" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="withdraw-modal-footer">
+                        <button type="submit" class="withdraw-btn withdraw-btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+var withdrawSampleData = [
+    { withdrawCode: 'CLT001', withdrawName: 'John Enterprise', withdrawDateTime: '2025-10-15 09:30 AM', withdrawAmount: 5250.00, withdrawUser: 'Admin' },
+    { withdrawCode: 'CLT002', withdrawName: 'Sarah Corp', withdrawDateTime: '2025-10-15 10:45 AM', withdrawAmount: 3100.50, withdrawUser: 'Manager' },
+    { withdrawCode: 'CLT003', withdrawName: 'Mike Industries', withdrawDateTime: '2025-10-15 02:15 PM', withdrawAmount: 8750.00, withdrawUser: 'Agent' },
+    { withdrawCode: 'CLT001', withdrawName: 'John Enterprise', withdrawDateTime: '2025-10-14 11:20 AM', withdrawAmount: 2500.00, withdrawUser: 'Admin' },
+    { withdrawCode: 'CLT004', withdrawName: 'Emma Solutions', withdrawDateTime: '2025-10-14 03:30 PM', withdrawAmount: 1250.75, withdrawUser: 'Manager' },
+    { withdrawCode: 'CLT005', withdrawName: 'David Tech', withdrawDateTime: '2025-10-13 08:00 AM', withdrawAmount: 6325.00, withdrawUser: 'Agent' },
+    { withdrawCode: 'CLT002', withdrawName: 'Sarah Corp', withdrawDateTime: '2025-10-13 04:45 PM', withdrawAmount: 4100.00, withdrawUser: 'Admin' },
+    { withdrawCode: 'CLT006', withdrawName: 'Lisa Holdings', withdrawDateTime: '2025-10-12 10:15 AM', withdrawAmount: 9999.99, withdrawUser: 'Manager' },
+];
+
+var withdrawFilteredData = [...withdrawSampleData];
+
+$(document).ready(() => {
+    withdrawLoadTheme();
+    withdrawSetTodayDate();
+    withdrawRenderTable();
+    withdrawAttachFilters();
+});
+
+/* ---------- DATE SETUP ---------- */
+function withdrawSetTodayDate() {
+    var today = new Date().toISOString().split('T')[0];
+    $('#withdrawStartDate, #withdrawEndDate').val(today);
+}
+
+/* ---------- RENDER TABLE ---------- */
+function withdrawRenderTable() {
+    var $tbody = $('#withdrawTableBody');
+    $tbody.empty();
+
+    if (!withdrawFilteredData.length) {
+        $tbody.html('<tr><td colspan="5" class="withdraw-empty-state"><p>No transactions found</p></td></tr>');
+        return;
+    }
+
+    // Build table rows once in memory
+    var rows = withdrawFilteredData.map((item, index) => {
+        var formattedAmount = item.withdrawAmount.toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        });
+        var formattedDate = formatDateTime(item.withdrawDateTime);
+        return `
+            <tr class="${index % 2 === 0 ? 'even' : 'odd'}">
+                <td class="withdraw-td"><strong>${item.withdrawCode}</strong></td>
+                <td class="withdraw-td">${item.withdrawName}</td>
+                <td class="withdraw-td">${formattedDate}</td>
+                <td class="withdraw-td withdraw-amount">${formattedAmount}</td>
+                <td class="withdraw-td">${item.withdrawUser}</td>
+            </tr>
+        `;
+    }).join('');
+
+    $tbody.html(rows);
+}
+
+function formatDateTime(dateString) {
+    var dateParts = dateString.split(' ');
+    var datePart = dateParts[0];
+    var timePart = dateParts[1];
+    var period = dateParts[2];
+    var dateComponents = datePart.split('-');
+    var year = dateComponents[0];
+    var month = dateComponents[1];
+    var day = dateComponents[2];
+    var formattedDate = day + '/' + month + '/' + year;
+    return formattedDate + ' ' + timePart + ' ' + period;
+}
+
+/* ---------- FILTERING ---------- */
+function withdrawAttachFilters() {
+    $('#withdrawClientCode').on('input', withdrawApplyFilters);
+    $('#withdrawStartDate, #withdrawEndDate').on('change', withdrawApplyFilters);
+}
+
+function withdrawApplyFilters() {
+    var code = $('#withdrawClientCode').val().toLowerCase();
+    var start = $('#withdrawStartDate').val();
+    var end = $('#withdrawEndDate').val();
+
+    withdrawFilteredData = withdrawSampleData.filter(item => {
+        var itemDate = item.withdrawDateTime.split(' ')[0];
+        return (
+            item.withdrawCode.toLowerCase().includes(code) &&
+            (!start || itemDate >= start) &&
+            (!end || itemDate <= end)
+        );
+    });
+
+    withdrawRenderTable();
+}
+
+/* ---------- CLEAR FILTER ---------- */
+function withdrawClearClientFilter() {
+    $('#withdrawClientCode, #withdrawStartDate, #withdrawEndDate').val('');
+    withdrawFilteredData = [...withdrawSampleData];
+    withdrawRenderTable();
+}
+
+/* ---------- MODAL ACTIONS ---------- */
+function withdrawDownloadData() {
+    alert('📥 Downloading filtered transaction data...');
+}
+
+function withdrawOpenWithdrawRequest() {
+    $('#withdrawModal').addClass('withdraw-active');
+    withdrawSetWithdrawDate();
+}
+
+function withdrawCloseWithdrawModal() {
+    $('#withdrawModal').removeClass('withdraw-active');
+}
+
+function withdrawSetWithdrawDate() {
+    $('#withdrawDate').val(new Date().toISOString().split('T')[0]);
+}
+
+function withdrawSubmitWithdrawRequest(event) {
+    event.preventDefault();
+
+    var date = $('#withdrawDate').val();
+    var code = $('#withdrawClientCode').val();
+    var name = $('#withdrawBOID').val();
+    var amount = parseFloat($('#withdrawAmount').val() || 0);
+    var narration = $('#withdrawNarration').val();
+
+    var newEntry = {
+        withdrawCode: code,
+        withdrawName: name,
+        withdrawDateTime: date + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        withdrawAmount: amount,
+        withdrawUser: 'You'
+    };
+
+    withdrawSampleData.unshift(newEntry);
+    withdrawApplyFilters();
+
+    alert('✅ Withdraw request submitted successfully!');
+    withdrawCloseWithdrawModal();
+    $('#withdrawModal form')[0].reset();
+    withdrawSetWithdrawDate();
+}
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Depth Settings Widget</title>
+    <style>
+        /* Base styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .widget-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* Tabs styling */
+        .widget-settings-tabs {
+            display: flex;
+            position: relative;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .widget-settings-tabs button {
+            background-color: transparent;
+            border: none;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .widget-settings-tabs button.active {
+            color: #007bff;
+        }
+        
+        .active-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: #007bff;
+            transition: left 0.3s, width 0.3s;
+            z-index: 0;
+        }
+        
+        /* Tab content styling */
+        .widget-settings-tabcontent {
+            display: none;
+            padding: 20px;
+        }
+        
+        .widget-settings-tabcontent.active {
+            display: block;
+        }
+        
+        /* Font size section */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .custom-radio {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .custom-radio:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .custom-radio input {
+            display: none;
+        }
+        
+        .custom-radio-mark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #adb5bd;
+            border-radius: 50%;
+            margin-right: 8px;
+            position: relative;
+            transition: border-color 0.2s;
+        }
+        
+        .custom-radio input:checked + .custom-radio-mark {
+            border-color: #007bff;
+        }
+        
+        .custom-radio input:checked + .custom-radio-mark::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background-color: #007bff;
+            border-radius: 50%;
+        }
+        
+        /* Symbol info section */
+        .symbol-info-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .symbol-info-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .symbol-info-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .symbol-info-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        
+        .symbol-info-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        
+        input:checked + .symbol-info-slider {
+            background-color: #007bff;
+        }
+        
+        input:checked + .symbol-info-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .symbol-info-slider.symbol-info-round {
+            border-radius: 34px;
+        }
+        
+        .symbol-info-slider.symbol-info-round:before {
+            border-radius: 50%;
+        }
+        
+        .mr-2 {
+            margin-right: 8px;
+        }
+        
+        .ml-2 {
+            margin-left: 8px;
+        }
+        
+        /* Compact mode section */
+        .toggle-button-cover {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .compact-button-cover {
+            position: relative;
+            width: 155px;
+            height: 80px;
+        }
+        
+        .compact-button {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .compact-checkbox {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 3;
+        }
+        
+        .compact-knobs, .compact-layer {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+        
+        .compact-knobs {
+            z-index: 2;
+        }
+        
+        .compact-layer {
+            width: 100%;
+            background-color: #ebf7fc;
+            transition: 0.3s ease all;
+            z-index: 1;
+            border-radius: 100px;
+        }
+        
+        .compact-button.r, .compact-button.r .compact-layer {
+            border-radius: 100px;
+        }
+        
+        .compact-button.r .compact-knobs:before {
+            content: "NORMAL";
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 65px;
+            height: 10px;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+            padding: 9px 4px;
+            background-color: #03a9f4;
+            border-radius: 50%;
+            transition: 0.3s cubic-bezier(0.18, 0.89, 0.35, 1.15) all;
+        }
+        
+        .compact-button.r .compact-checkbox:checked + .compact-knobs:before {
+            content: "COMPACT";
+            left: 82px;
+            background-color: #f44336;
+        }
+        
+        .compact-button.r .compact-checkbox:checked ~ .compact-layer {
+            background-color: #fcebeb;
+        }
+        
+        /* Theme section */
+        .theme-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .theme-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .theme-option {
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .theme-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .theme-option.selected {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .theme-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            margin-left: auto;
+        }
+        
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .theme-slider {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+        
+        input:checked + .theme-slider:before {
+            transform: translateX(20px);
+        }
+        
+        .theme-preview {
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .theme-option.selected .theme-preview {
+            display: block;
+        }
+        
+        .preview-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background-color: #e9ecef;
+        }
+        
+        .preview-bid, .preview-ask {
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            background-color: white;
+        }
+        
+        .bid-price {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .ask-price {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .preview-footer {
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget-container">
+        <div id="market_depth_settings_table_1">
+            <div class="widget-settings-tabs" data-widget-id="table_1"> 
+                <button class="tablinks active" onclick="openTab(event, 'fontSize_table_1')">Font Size</button>
+                <button class="tablinks" onclick="openTab(event, 'showSymbolInfo_table_1')">Symbol Info</button>
+                <button class="tablinks" onclick="openTab(event, 'compact_table_1')">Compact Mode</button>
+                <button class="tablinks" onclick="openTab(event, 'theme_table_1')">Theme</button>
+                <div class="active-indicator"></div>
+            </div>  
+            
+            <!-- Font Size Tab -->
+            <div id="fontSize_table_1" class="mktdepth-font-group widget-settings-tabcontent active">
+                <div class="grid-container">
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="extra-large"> 
+                        <span class="custom-radio-mark"></span> X Large
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="large"> 
+                        <span class="custom-radio-mark"></span> Large
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="normal"> 
+                        <span class="custom-radio-mark"></span> Normal
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="system" checked> 
+                        <span class="custom-radio-mark"></span> System
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="small"> 
+                        <span class="custom-radio-mark"></span> Small
+                    </label>
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="extra-small"> 
+                        <span class="custom-radio-mark"></span> X Small
+                    </label> 
+                    <label class="custom-radio">
+                        <input type="radio" name="fontsize_table_1" value="xxs-small"> 
+                        <span class="custom-radio-mark"></span> XX Small
+                    </label> 
+                </div>
+            </div>
+
+            <!-- Symbol Info Tab -->
+            <div id="showSymbolInfo_table_1" class="mktdepth-switch-group widget-settings-tabcontent">
+                <div class="symbol-info-wrapper"> 
+                    <span class="mr-2" id="slider_show_table_1">Show</span>
+                    <label class="symbol-info-switch"> 
+                        <input type="checkbox" name="symbol_info_table_1" id="toggle_table_1"> 
+                        <div class="symbol-info-slider symbol-info-round"></div> 
+                    </label> 
+                    <span class="ml-2" id="slider_hide_table_1">Hide</span>
+                </div>
+            </div>
+            
+            <!-- Compact Mode Tab -->
+            <div id="compact_table_1" class="mkt-compact-group widget-settings-tabcontent">
+                <div class="toggle-button-cover">
+                    <div class="compact-button-cover">
+                        <div class="compact-button compact-r">
+                            <input type="checkbox" class="compact-checkbox" name="compact_table_1" id="toggle_table_1"/> 
+                            <div class="compact-knobs"></div>
+                            <div class="compact-layer"></div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            
+            <!-- Theme Tab -->
+            <div id="theme_table_1" class="widget-settings-tabcontent">
+                <div class="theme-section">
+                    <div class="theme-options">
+                        <!-- Default Blue Theme -->
+                        <div class="theme-option selected" data-theme="default">
+                            <div class="theme-header" style=" background: linear-gradient(90deg, rgba(8, 189, 149, 1) 31%, rgba(214, 19, 71, 1) 81%);">
+                                <span>Default Blue</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                            <div class="theme-preview">
+                                <div class="preview-content">
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,650.00</span>
+                                        <span>10.5</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,700.00</span>
+                                        <span>8.2</span>
+                                    </div>
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,640.00</span>
+                                        <span>15.3</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,710.00</span>
+                                        <span>12.7</span>
+                                    </div>
+                                </div>
+                                <div class="preview-footer">
+                                    Market Depth Preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dark Theme -->
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-header" style="background: linear-gradient(90deg,rgba(28, 95, 230, 1) 31%, rgba(187, 26, 199, 1) 75%);">
+                                <span>Dark Mode</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox">
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                            <div class="theme-preview">
+                                <div class="preview-content">
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,650.00</span>
+                                        <span>10.5</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,700.00</span>
+                                        <span>8.2</span>
+                                    </div>
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,640.00</span>
+                                        <span>15.3</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,710.00</span>
+                                        <span>12.7</span>
+                                    </div>
+                                </div>
+                                <div class="preview-footer">
+                                    Market Depth Preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Green Theme -->
+                        <div class="theme-option" data-theme="green">
+                            <div class="theme-header" style="background: linear-gradient(90deg,rgba(0, 183, 217, 1) 35%, rgba(227, 14, 112, 1) 68%);">
+                                <span>Forest Green</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox">
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                            <div class="theme-preview">
+                                <div class="preview-content">
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,650.00</span>
+                                        <span>10.5</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,700.00</span>
+                                        <span>8.2</span>
+                                    </div>
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,640.00</span>
+                                        <span>15.3</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,710.00</span>
+                                        <span>12.7</span>
+                                    </div>
+                                </div>
+                                <div class="preview-footer">
+                                    Market Depth Preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Purple Theme -->
+                        <div class="theme-option" data-theme="purple">
+                            <div class="theme-header" style="background: linear-gradient(90deg,rgba(33, 199, 67, 1) 30%, rgba(253, 145, 83, 1) 63%);">
+                                <span>Royal Purple</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox">
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                            <div class="theme-preview">
+                                <div class="preview-content">
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,650.00</span>
+                                        <span>10.5</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,700.00</span>
+                                        <span>8.2</span>
+                                    </div>
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,640.00</span>
+                                        <span>15.3</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,710.00</span>
+                                        <span>12.7</span>
+                                    </div>
+                                </div>
+                                <div class="preview-footer">
+                                    Market Depth Preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Orange Theme -->
+                        <div class="theme-option" data-theme="orange">
+                            <div class="theme-header" style="background: linear-gradient(90deg,rgba(133, 209, 201, 1) 35%, rgba(229, 168, 169, 1) 62%);">
+                                <span>Sunset Orange</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox">
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                            <div class="theme-preview">
+                                <div class="preview-content">
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,650.00</span>
+                                        <span>10.5</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,700.00</span>
+                                        <span>8.2</span>
+                                    </div>
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price">$45,640.00</span>
+                                        <span>15.3</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price">$45,710.00</span>
+                                        <span>12.7</span>
+                                    </div>
+                                </div>
+                                <div class="preview-footer">
+                                    Market Depth Preview
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Teal Theme -->
+                        <div class="theme-option" data-theme="teal">
+                            <div class="theme-header" style="background: linear-gradient(90deg,rgba(0, 146, 243, 1) 38%, rgba(243, 0, 0, 1) 62%);">
+                                <span>Ocean Teal</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox">
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                            <div class="theme-preview">
+                                <div class="preview-content">
+                                    <div class="preview-bid">
+                                        <span></span>
+                                        <span class="bid-price"></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price"></span>
+                                        <span>8.2</span>
+                                    </div>
+                                    <div class="preview-bid">
+                                        <span>Bid</span>
+                                        <span class="bid-price"></span>
+                                        <span>15.3</span>
+                                    </div>
+                                    <div class="preview-ask">
+                                        <span>Ask</span>
+                                        <span class="ask-price"></span>
+                                        <span>12.7</span>
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function openTab(evt, tabName) {
+            const tabcontent = document.getElementsByClassName("widget-settings-tabcontent");
+            for (let i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            const tablinks = document.getElementsByClassName("tablinks");
+            for (let i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            // Update active indicator position
+            const activeIndicator = document.querySelector('.active-indicator');
+            const buttonRect = evt.currentTarget.getBoundingClientRect();
+            const containerRect = document.querySelector('.widget-settings-tabs').getBoundingClientRect();
+            
+            activeIndicator.style.left = (buttonRect.left - containerRect.left) + 'px';
+            activeIndicator.style.width = buttonRect.width + 'px';
+        }
+        
+        // Initialize active indicator position
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeButton = document.querySelector('.tablinks.active');
+            const activeIndicator = document.querySelector('.active-indicator');
+            
+            if (activeButton) {
+                const buttonRect = activeButton.getBoundingClientRect();
+                const containerRect = document.querySelector('.widget-settings-tabs').getBoundingClientRect();
+                
+                activeIndicator.style.left = (buttonRect.left - containerRect.left) + 'px';
+                activeIndicator.style.width = buttonRect.width + 'px';
+            }
+            
+            // Theme selection functionality
+            const themeOptions = document.querySelectorAll('.theme-option');
+            themeOptions.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    // Don't trigger selection when clicking the switch
+                    if (e.target.type === 'checkbox' || e.target.classList.contains('theme-slider')) {
+                        return;
+                    }
+                    
+                    // Remove selected class from all options
+                    themeOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Theme switch functionality
+            const themeSwitches = document.querySelectorAll('.theme-switch input');
+            themeSwitches.forEach(switchEl => {
+                switchEl.addEventListener('change', function() {
+                    const themeOption = this.closest('.theme-option');
+                    
+                    if (this.checked) {
+                        // If this theme is being activated, deactivate others
+                        themeSwitches.forEach(s => {
+                            if (s !== this) {
+                                s.checked = false;
+                            }
+                        });
+                        
+                        // Select this theme
+                        themeOptions.forEach(opt => opt.classList.remove('selected'));
+                        themeOption.classList.add('selected');
+                    } else {
+                        // If no theme is selected, select the default one
+                        if (!Array.from(themeSwitches).some(s => s.checked)) {
+                            const defaultTheme = document.querySelector('.theme-option[data-theme="default"]');
+                            defaultTheme.classList.add('selected');
+                            defaultTheme.querySelector('input[type="checkbox"]').checked = true;
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

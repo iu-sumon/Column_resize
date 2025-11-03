@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Trading Panels — Commodity / Spread / Advanced (Auto Theme)</title>
+  <meta name="description" content="Commodity order window + Spread order + Advanced options — unified modern UI with auto dark/light theme" />
+  <style>
+    /* =========================================
+       VARIABLES + THEME (auto light/dark)
+       ========================================= */
+    :root{
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --muted: #68707a;
+      --accent: #1976d2;
+      --accent-2: #0ea5a0;
+      --danger: #e53935;
+      --success: #2e7d32;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 20px rgba(20,24,28,0.06);
+      --radius: 12px;
+      --input-border: #d7d9dd;
+      --control-bg: #f7fafc;
+      --text: #111827;
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg: #0f1720;
+        --card: #0b1220;
+        --muted: #9aa3b2;
+        --accent: #4ea8ff;
+        --accent-2: #33d6c6;
+        --danger: #ff6b6b;
+        --success: #4ade80;
+        --glass: rgba(255,255,255,0.03);
+        --shadow: 0 8px 30px rgba(2,6,23,0.6);
+        --radius: 12px;
+        --input-border: rgba(255,255,255,0.06);
+        --control-bg: rgba(255,255,255,0.02);
+        --text: #e6eef8;
+      }
+    }
+
+    /* Base layout */
+    *{box-sizing: border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: linear-gradient(180deg, var(--bg), var(--bg));
+      color: var(--text);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:36px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Container */
+    .frame{
+      width:100%;
+      max-width:1100px;
+      display:grid;
+      grid-template-columns: 1fr 420px;
+      gap:22px;
+      align-items:start;
+    }
+
+    /* Left column: big tabbed card */
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      overflow:hidden;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-bottom:14px;
+    }
+
+    .tab{
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:600;
+      font-size:13px;
+      color:var(--muted);
+      background:transparent;
+      border:none;
+      cursor:pointer;
+    }
+    .tab.active{
+      background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      color:var(--text);
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.04);
+    }
+
+    .content{
+      margin-top:10px;\    }
+
+    /* form grid shared styles */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-row{display:flex;flex-direction:column;gap:6px}
+    label{font-size:12px;color:var(--muted)}
+    select,input{padding:10px;border-radius:8px;border:1px solid var(--input-border);background:transparent;color:var(--text);font-size:14px}
+    input[type=number]{-moz-appearance:textfield}
+
+    /* Margin & info row */
+    .info-row{display:flex;gap:12px;align-items:center;margin-top:12px;padding:12px;border-radius:10px;background:var(--control-bg);border:1px solid var(--input-border)}
+    .info-box{flex:1;display:flex;justify-content:space-between;gap:10px;font-size:13px}
+    .info-col{display:flex;flex-direction:column}
+    .info-col .label{font-size:12px;color:var(--muted)}
+    .large{font-weight:700;font-size:16px}
+
+    /* action buttons */
+    .actions{display:flex;gap:10px;margin-top:14px}
+    .btn{flex:1;padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+    .btn.buy{background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 75%, transparent));color:white}
+    .btn.sell{background:linear-gradient(180deg,var(--danger),color-mix(in srgb,var(--danger) 70%, transparent));color:white}
+    .btn.ghost{background:transparent;border:1px solid var(--input-border);color:var(--muted)}
+
+    /* Advanced panel */
+    .advanced{margin-top:12px;padding:12px;border-radius:10px;background:var(--control-bg);display:none;gap:10px}
+    .advanced.show{display:grid}
+
+    /* Spread UI specific tweaks */
+    .spread-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .leg{padding:12px;border-radius:8px;border:1px solid var(--input-border);background:transparent}
+    .leg .title{font-size:13px;font-weight:700;margin-bottom:6px}
+
+    /* Right column: compact commodity order */
+    .side-card{display:flex;flex-direction:column;gap:12px}
+    .mini{padding:14px;border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
+    .mini .row{display:flex;gap:8px;align-items:center}
+
+    .summary{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:8px}
+    .pill{padding:8px 10px;border-radius:8px;font-weight:700}
+
+    /* responsive */
+    @media (max-width:980px){
+      .frame{grid-template-columns:1fr;}
+    }
+
+    /* little helpers */
+    .muted{color:var(--muted);font-size:12px}
+    .small{font-size:12px}
+    .success{color:var(--success)}
+    .danger{color:var(--danger)}
+
+    /* subtle focus */
+    select:focus,input:focus{outline:none;box-shadow:0 4px 20px rgba(0,0,0,0.06);border-color:color-mix(in srgb,var(--accent) 30%, transparent)}
+
+  </style>
+</head>
+<body>
+  <!-- Theme Toggle Button -->
+  <button id="themeToggle" style="position:fixed;top:18px;right:18px;padding:8px 14px;border-radius:10px;border:1px solid var(--input-border);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;font-weight:600;z-index:999;">Light/Dark</button>
+  <div class="frame">
+    <!-- LEFT: Tabbed big card -->
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-panel="commodity">Commodity Order</button>
+        <button class="tab" data-panel="spread">Spread Order</button>
+        <button class="tab" data-panel="advanced">Advanced Options</button>
+      </div>
+
+      <div class="content">
+        <!-- COMMODITY PANEL -->
+        <div class="panel" id="commodity">
+          <div class="grid-2">
+            <div class="form-row">
+              <label>Commodity</label>
+              <select id="com_commodity"><option>GOLD</option><option>SILVER</option></select>
+            </div>
+            <div class="form-row">
+              <label>Expiry</label>
+              <select id="com_expiry"><option>Feb 2026</option><option>Apr 2026</option></select>
+            </div>
+
+            <div class="form-row">
+              <label>Type</label>
+              <select id="com_type"><option>FUTURES</option><option>OPTIONS</option></select>
+            </div>
+
+            <div class="form-row">
+              <label>Order Type</label>
+              <select id="com_ordertype"><option>Limit</option><option>Market</option></select>
+            </div>
+
+            <div class="form-row">
+              <label>Qty (Lots)</label>
+              <input id="com_qty" type="number" min="1" value="5" />
+            </div>
+
+            <div class="form-row">
+              <label>Price</label>
+              <input id="com_price" type="number" value="72450.00" />
+            </div>
+
+            <div class="form-row">
+              <label>Product</label>
+              <select id="com_product"><option>Carry Forward</option><option>Intraday</option></select>
+            </div>
+
+            <div class="form-row">
+              <label>Validity</label>
+              <select id="com_validity"><option>DAY</option><option>IOC</option></select>
+            </div>
+
+          </div>
+
+          <div class="info-row">
+            <div class="info-box">
+              <div class="info-col"><span class="label">Margin Req:</span><span class="large" id="margin_req">-</span></div>
+              <div class="info-col"><span class="label">Avail:</span><span class="large" id="avail_bal">-</span></div>
+              <div class="info-col"><span class="label">MTM:</span><span class="large" id="mtm">-</span></div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn buy" id="com_buy">BUY</button>
+            <button class="btn sell" id="com_sell">SELL</button>
+            <button class="btn ghost" id="com_reset">RESET</button>
+          </div>
+        </div>
+
+        <!-- SPREAD PANEL -->
+        <div class="panel" id="spread" style="display:none">
+          <div class="spread-grid">
+            <div class="leg">
+              <div class="title">BUY</div>
+              <div class="form-row"><label>Commodity</label><select><option>GOLD</option></select></div>
+              <div class="form-row"><label>Expiry</label><select><option>Feb 2026</option></select></div>
+              <div class="form-row"><label>Quantity</label><input type="number" value="10" /></div>
+              <div class="form-row"><label>Product</label><select><option>Carry Forward</option></select></div>
+            </div>
+
+            <div class="leg">
+              <div class="title">SELL</div>
+              <div class="form-row"><label>Commodity</label><select><option>GOLD</option></select></div>
+              <div class="form-row"><label>Expiry</label><select><option>Apr 2026</option></select></div>
+              <div class="form-row"><label>Price</label><input type="number" value="72500" /></div>
+              <div class="form-row"><label>Validity</label><select><option>Day</option></select></div>
+            </div>
+          </div>
+
+          <div class="info-row" style="margin-top:14px">
+            <div class="info-box">
+              <div class="info-col"><span class="label">Margin</span><span class="large" id="spr_margin">1,20,000</span></div>
+              <div class="info-col"><span class="label">Open Pos</span><span class="small">5 Buy @ 72,400</span></div>
+              <div class="info-col"><span class="label">Unrealized P/L</span><span class="small">+2,500</span></div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn buy">BUY</button>
+            <button class="btn sell">SELL</button>
+            <button class="btn ghost" id="spr_reset">RESET</button>
+          </div>
+        </div>
+
+        <!-- ADVANCED PANEL -->
+        <div class="panel" id="advanced" style="display:none">
+          <div class="grid-2">
+            <div class="form-row"><label>Order Type</label><select><option>Bracket Order</option><option>Regular</option></select></div>
+            <div class="form-row"><label>Market</label><input type="number" placeholder="72450.00" /></div>
+            <div class="form-row"><label>Stop Loss</label><input type="number" placeholder="72300.00" /></div>
+            <div class="form-row"><label>Take Profit</label><input type="number" placeholder="72600.00" /></div>
+            <div class="form-row"><label>Trailing (points)</label><input type="number" placeholder="50" /></div>
+          </div>
+
+          <div class="actions" style="margin-top:12px">
+            <button class="btn ghost" id="adv_cancel">CANCEL</button>
+            <button class="btn" id="adv_submit" style="background:linear-gradient(180deg,var(--accent-2), color-mix(in srgb,var(--accent-2) 65%, transparent));color:#032">SUBMIT</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: Compact commodity summary / quick order -->
+    <div class="side-card">
+      <div class="mini card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:800">Commodity Order Window</div>
+            <div class="muted small">Quick entry & summary</div>
+          </div>
+          <button class="btn ghost" id="open_advanced_side">Advanced</button>
+        </div>
+
+        <div style="margin-top:12px" class="grid-2">
+          <div class="form-row"><label>Qty (Lots)</label><input id="side_qty" type="number" value="5" /></div>
+          <div class="form-row"><label>Price</label><input id="side_price" type="number" value="72450.00" /></div>
+        </div>
+
+        <div class="summary">
+          <div class="pill" style="background:var(--control-bg)"><div class="small muted">Margin Req</div><div id="side_margin" class="large">1,20,000</div></div>
+          <div class="pill" style="background:var(--control-bg)"><div class="small muted">Avail</div><div id="side_avail" class="large">2,40,000</div></div>
+        </div>
+
+        <div class="actions" style="margin-top:12px">
+          <button class="btn buy" id="side_buy">BUY</button>
+          <button class="btn sell" id="side_sell">SELL</button>
+        </div>
+      </div>
+
+      <div class="mini card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-weight:700">Positions</div><div class="muted small">Open positions summary</div></div>
+          <div class="small muted">MTM <span class="success">+3,500</span></div>
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:8px;flex-direction:column">
+          <div style="display:flex;justify-content:space-between"><div class="small muted">5 Buy</div><div class="small">@ 72,400</div></div>
+          <div style="display:flex;justify-content:space-between"><div class="small muted">Unrealized P/L</div><div class="small success">+2,500</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = btn.dataset.panel;
+        document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+        document.getElementById(panel).style.display='block';
+      })
+    });
+
+    // Simple UI interactions + sample calculations
+    const comPrice = document.getElementById('com_price');
+    const comQty = document.getElementById('com_qty');
+    const marginReqEl = document.getElementById('margin_req');
+    const availEl = document.getElementById('avail_bal');
+    const mtmEl = document.getElementById('mtm');
+
+    function fmt(n){
+      return n.toLocaleString();
+    }
+
+    function recalc(){
+      const price = Number(comPrice.value || 0);
+      const qty = Number(comQty.value || 0);
+      // VERY SIMPLE sample margin calc: price * qty * multiplier(1) * lotSize(1)
+      const margin = Math.round(price * qty);
+      const avail = Math.round(240000 - (margin * 0.1));
+      const mtm = Math.round((Math.random()-0.5) * 2000 + 3500);
+      marginReqEl.textContent = fmt(margin);
+      availEl.textContent = fmt(avail);
+      mtmEl.textContent = (mtm>0?'+':'')+fmt(mtm);
+    }
+
+    comPrice.addEventListener('input',recalc);
+    comQty.addEventListener('input',recalc);
+    recalc();
+
+    // Advanced panel toggle from side and header
+    const advPanel = document.getElementById('advanced');
+    document.getElementById('open_advanced_side').addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      document.querySelector('[data-panel="advanced"]').classList.add('active');
+      document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+      advPanel.style.display = 'block';
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+
+    // Reset buttons
+    document.getElementById('com_reset').addEventListener('click',()=>{
+      document.getElementById('com_qty').value = 5;
+      document.getElementById('com_price').value = 72450;
+      recalc();
+    });
+
+    document.getElementById('spr_reset').addEventListener('click',()=>{location.reload();});
+
+    // Quick side buy/sell simple feedback
+    document.getElementById('side_buy').addEventListener('click',()=>{
+      const q = Number(document.getElementById('side_qty').value);
+      const p = Number(document.getElementById('side_price').value);
+      alert('Quick BUY: '+q+' lots @ '+p);
+    });
+    document.getElementById('side_sell').addEventListener('click',()=>{
+      const q = Number(document.getElementById('side_qty').value);
+      const p = Number(document.getElementById('side_price').value);
+      alert('Quick SELL: '+q+' lots @ '+p);
+    });
+
+    // small UX: prevent scroll on number input arrows when focused
+    document.querySelectorAll('input[type=number]').forEach(i=>{
+      i.addEventListener('wheel', (e)=>{e.preventDefault();});
+    });
+  </script>
+<script>
+    const button = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    let mode = 'auto';
+
+    button.addEventListener('click', () => {
+      if(mode === 'auto' || mode === 'light'){
+        mode = 'dark';
+        root.setAttribute('data-theme', 'dark');
+      }else{
+        mode = 'light';
+        root.setAttribute('data-theme', 'light');
+      }
+    });
+  </script>
+<script>
+// Theme toggle
+const toggleBtn = document.getElementById('themeToggle');
+let manualMode = localStorage.getItem('manualTheme');
+
+function applyTheme(){
+  if(manualMode === 'light'){
+    document.documentElement.classList.add('manual-light');
+    document.documentElement.classList.remove('manual-dark');
+  } else if(manualMode === 'dark'){
+    document.documentElement.classList.add('manual-dark');
+    document.documentElement.classList.remove('manual-light');
+  } else {
+    document.documentElement.classList.remove('manual-light','manual-dark');
+  }
+}
+
+applyTheme();
+
+toggleBtn.addEventListener('click',()=>{
+  if(manualMode === 'light') manualMode = 'dark';
+  else if(manualMode === 'dark') manualMode = null;
+  else manualMode = 'light';
+
+  if(manualMode) localStorage.setItem('manualTheme', manualMode);
+  else localStorage.removeItem('manualTheme');
+
+  applyTheme();
+});
+</script>
+</body>
+</html>
