@@ -418,3 +418,16 @@
   </script>
 </body>
 </html>
+
+
+ if (name === "leaderboard") {
+            if ($('.lm_title:contains("Leader Board")').length > 0) {
+                show_flash_messages('Leader Board Widget already added', 'danger');
+            } else {
+                $.get('shared/widget_leaderboard/', function (data) {
+                    var content = data;
+                    var title = 'Leader Board';
+                    addWidget(title, content, 200, 300); 
+                });
+            }
+        }

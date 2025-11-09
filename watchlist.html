@@ -1,686 +1,1142 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdrawal Request System</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style> 
+{% extends utils.set_layout() %}
 
-        .withdraw-container {
-            max-width: 1800px;
-            margin: 0 auto;
-            background: var(--withdraw-bg-primary);
-            border-radius: 16px;
-            overflow: hidden;
-            margin-top: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
+{% block body %}
 
-        .withdraw-main-content {
-            padding: 25px;
-        }
+<style>
+  :root {
+    /* Light mode colors - Withdraw Modal */
+    --withdrawmodal-bg-primary: #ffffff;
+    --withdrawmodal-bg-secondary: #f8f9fa;
+    --withdrawmodal-bg-tertiary: #e9ecef;
+    --withdrawmodal-text-primary: #212529;
+    --withdrawmodal-text-secondary: #495057;
+    --withdrawmodal-text-tertiary: #6c757d;
+    --withdrawmodal-border-color: #dee2e6;
+    --withdrawmodal-input-bg: #ffffff;
+    --withdrawmodal-input-border: #ced4da;
+    --withdrawmodal-focus: #667eea;
+    --withdrawmodal-success: #28a745;
+    --withdrawmodal-success-light: #d4edda;
+    --withdrawmodal-danger: #dc3545;
+    --withdrawmodal-danger-light: #f8d7da;
+    --withdrawmodal-warning: #ffc107;
+    --withdrawmodal-info: #17a2b8;
+    --withdrawmodal-shadow: rgba(0, 0, 0, 0.1);
+  }
 
-        .withdraw-controls-section {
-            display: flex;
-            justify-content: space-between;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
+  [data-theme="dark"] {
+    /* Dark mode colors - Withdraw Modal */
+    --withdrawmodal-bg-primary: #1a1a2e;
+    --withdrawmodal-bg-secondary: #16213e;
+    --withdrawmodal-bg-tertiary: #0f3460;
+    --withdrawmodal-text-primary: #ffffff;
+    --withdrawmodal-text-secondary: #e9ecef;
+    --withdrawmodal-text-tertiary: #adb5bd;
+    --withdrawmodal-border-color: #333;
+    --withdrawmodal-input-bg: #16213e;
+    --withdrawmodal-input-border: #333;
+    --withdrawmodal-focus: #667eea;
+    --withdrawmodal-success: #28a745;
+    --withdrawmodal-success-light: rgba(40, 167, 69, 0.2);
+    --withdrawmodal-danger: #dc3545;
+    --withdrawmodal-danger-light: rgba(220, 53, 69, 0.2);
+    --withdrawmodal-warning: #ffc107;
+    --withdrawmodal-info: #17a2b8;
+    --withdrawmodal-shadow: rgba(0, 0, 0, 0.5);
+  }
 
-        .withdraw-filters {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+  .withdraw-container {
+    max-width: 1800px;
+    margin: 0 auto;
+    background: var(--withdraw-bg-primary);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 30px;
+  }
 
-        .withdraw-filter-group {
-            display: flex;
-            flex-direction: column;
-        }
+  .withdraw-main-content {
+    padding: 25px;
+  }
 
-        .withdraw-client-code-wrapper {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-        }
+  .withdraw-controls-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
 
-        .withdraw-client-code-wrapper input {
-            flex: 1;
-        }
+  .withdraw-filters {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
 
-        .withdraw-client-code-wrapper .withdraw-btn-clear {
-            height: 36px;
-            padding: 0 13px;
-        }
+  .withdraw-date-range-wrapper {
+    display: flex;
+    gap: 5px;
+    position: relative;
+  }
 
-        .withdraw-date-range-wrapper {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            position: relative;
-        }
+  .withdraw-date-range-wrapper input {
+    flex: 1;
+    padding: 7px 14px;
+    border: 2px solid var(--withdraw-input-border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--withdraw-input-bg);
+    color: var(--withdraw-text-primary);
+    font-family: inherit;
+  }
 
-        .withdraw-date-range-wrapper input {
-            flex: 1;
-            padding: 7px 14px;
-            border: 2px solid var(--withdraw-input-border);
-            border-radius: 8px;
-            font-size: 14px;
-            background: var(--withdraw-input-bg);
-            color: var(--withdraw-text-primary);
-            font-family: inherit;
-        }
+  .withdraw-date-time-range-wrapper {
+    display: flex;
+    gap: 5px;
+    position: relative;
+    padding: 3px 7px;
+    border: 2px solid var(--withdraw-input-border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--withdraw-input-bg);
+    color: var(--withdraw-text-primary);
+    font-family: inherit;
+  }
 
-        .withdraw-date-range-wrapper .input-group-append {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 5;
-        }
+  .withdraw-date-time-range-wrapper input {
+    flex: 1;
+    padding: 0px;
+    font-size: 14px;
+    background: var(--withdraw-input-bg);
+    color: var(--withdraw-text-primary);
+    font-family: inherit;
+    border: none;
+    text-align: center;
+  }
 
-        .withdraw-filter-group input,
-        .withdraw-filter-group select {
-            width: 100%;
-            padding: 7px 14px;
-            border: 2px solid var(--withdraw-input-border);
-            border-radius: 8px;
-            font-size: 14px;
-            background: var(--withdraw-input-bg);
-            color: var(--withdraw-text-primary);
-            font-family: inherit;
-        }
+  .withdraw-date-time-range-wrapper input:focus {
+    outline: none;
+  }
 
-        .withdraw-filter-group input:focus,
-        .withdraw-filter-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+  /* When any child input is focused */
+  .withdraw-date-time-range-wrapper:focus-within {
+    border: 1px solid var(--withdraw-foucus);
+  }
 
-        .withdraw-date-range-wrapper input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+  /* Red star for required labels */
+  label::after {
+    content: attr(data-required);
+    color: red;
+    margin-left: 4px;
+    font-weight: bold;
+  }
 
-        /* Red star for required labels */
-        label::after {
-            content: attr(data-required);
-            color: red;
-            margin-left: 4px;
-            font-weight: bold;
-        }
+  .withdraw-btn-clear {
+    background: #ff6b6b;
+    color: white;
+  }
 
-        .withdraw-btn-clear {
-            padding: 12px 16px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
+  .withdraw-btn-clear:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+  }
 
-        .withdraw-btn-clear:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
-        }
+  .withdraw-actions {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
 
-        .withdraw-actions {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
+  .withdraw-btn {
+    padding: 7px 8px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
 
-        .withdraw-btn {
-            padding: 7px 8px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
+  .withdraw-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
 
-        .withdraw-btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
+  .withdraw-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  }
 
-        .withdraw-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
+  .withdraw-btn-secondary {
+    background: var(--withdraw-bg-tertiary);
+    color: var(--withdraw-text-primary);
+    border: 2px solid var(--withdraw-border-color);
+  }
 
-        .withdraw-btn-secondary {
-            background: var(--withdraw-bg-tertiary);
-            color: var(--withdraw-text-primary);
-            border: 2px solid var(--withdraw-border-color);
-        }
+  .withdraw-btn-secondary:hover {
+    background: var(--withdraw-hover-bg);
+    border-color: #667eea;
+    transform: translateY(-2px);
+  }
 
-        .withdraw-btn-secondary:hover {
-            background: var(--withdraw-hover-bg);
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
+  .withdraw-btn-bulk {
+    background: linear-gradient(135deg, var(--withdrawmodal-success) 0%, #20c997 100%);
+    color: white;
+  }
 
-        .withdraw-table-wrapper {
-            overflow-x: auto;
-            border-radius: 12px;
-            border: 1px solid var(--withdraw-border-color);
-            background: var(--withdraw-bg-primary);
-        }
+  .withdraw-btn-bulk:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+  }
 
-        .withdraw-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--withdraw-bg-primary);
-        }
+  .withdraw-table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--withdraw-border-color);
+    background: var(--withdraw-bg-primary);
+  }
 
-        .withdraw-thead {
-            background: var(--withdraw-bg-secondary);
-            border-bottom: 2px solid var(--withdraw-border-color);
-        }
+  .withdraw-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--withdraw-bg-primary);
+    min-width: 800px;
+  }
 
-        .withdraw-th {
-            padding: 10px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--withdraw-text-primary);
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+  .withdraw-thead {
+    background: var(--withdraw-bg-secondary);
+    border-bottom: 2px solid var(--withdraw-border-color);
+  }
 
-        .withdraw-td {
-            padding: 7px;
-            font-size: 14px;
-            color: var(--withdraw-text-secondary);
-        }
+  /* Responsive table header widths */
+  .withdraw-th {
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--withdraw-text-primary);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
 
-        .withdraw-tbody tr {
-            transition: all 0.3s ease;
-            background: var(--withdraw-bg-primary);
-        }
+  /* Default widths for desktop */
+  .withdraw-th:nth-child(1) {
+    width: 5%;
+  }
 
-        .withdraw-tbody tr:hover {
-            background: var(--withdraw-hover-bg);
-        }
+  /* Transaction Id */
+  .withdraw-th:nth-child(2) {
+    width: 7%;
+  }
 
-        .withdraw-amount {
-            font-weight: 600;
-            color: #667eea;
-        }
+  /* Client Code */
+  .withdraw-th:nth-child(3) {
+    width: 11%;
+  }
 
-        .withdraw-empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--withdraw-text-tertiary);
-        }
+  /* Name */
+  .withdraw-th:nth-child(4) {
+    width: 11%;
+  }
 
-        .withdraw-empty-state p {
-            font-size: 16px;
-        }
+  /* Date & Time */
+  .withdraw-th:nth-child(5) {
+    width: 7%;
+  }
 
-        /* Modal */
-        .withdraw-modal {
-            background: var(--withdraw-bg-primary);
-        }
+  /* Amount */
+  .withdraw-th:nth-child(6) {
+    width: 8%;
+  }
 
-        .withdraw-modal-content {
-            padding: 15px;
-        }
+  /* User */
+  .withdraw-th:nth-child(7) {
+    width: 5%;
+  }
 
-        .withdraw-form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
+  /* Status */
+  .withdraw-th:nth-child(8) {
+    width: 6%;
+  }
 
-        .withdraw-form-row.withdraw-full {
-            grid-template-columns: 1fr;
-        }
+  /* Action */
 
-        .withdraw-form-group {
-            display: flex;
-            flex-direction: column;
-        }
+  .withdraw-td {
+    padding: 7px;
+    font-size: 14px;
+    color: var(--withdraw-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-        .withdraw-form-group label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--withdraw-text-primary);
-            margin-bottom: 10px;
-        }
+  .withdraw-tbody tr {
+    transition: all 0.3s ease;
+    background: var(--withdraw-bg-primary);
+  }
 
-        .withdraw-form-group input,
-        .withdraw-form-group textarea {
-            padding: 8px 14px;
-            border: 2px solid var(--withdraw-input-border);
-            border-radius: 8px;
-            font-size: 14px;
-            background: var(--withdraw-input-bg);
-            color: var(--withdraw-text-primary);
-            transition: all 0.3s ease;
-        }
+  .withdraw-tbody tr:hover {
+    background: var(--withdraw-hover-bg);
+  }
 
-        #withdrawNarration {
-            height: 85px;
-        }
+  .withdraw-amount {
+    font-weight: 600;
+    color: #667eea;
+  }
 
-        .withdraw-form-group input:focus,
-        .withdraw-form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+  .withdraw-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--withdraw-text-tertiary);
+  }
 
-        .withdraw-modal-footer {
-            padding: 20px 24px;
-            border-top: 1px solid var(--withdraw-border-color);
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
+  .withdraw-empty-state p {
+    font-size: 16px;
+  }
 
-        .withdraw-modal-footer .withdraw-btn {
-            padding: 12px 32px;
-            min-width: 120px;
-        }
+  /* Modal */
+  .withdraw-modal {
+    background: var(--withdraw-bg-primary);
+  }
 
-        /* Flatpickr customization */
-        .flatpickr-calendar {
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
+  .withdraw-modal-content {
+    padding: 15px;
+  }
 
-        .flatpickr-day.selected {
-            background: var(--withdraw-primary);
-            border-color: var(--withdraw-primary);
-        }
+  .withdraw-form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+  }
 
-        .flatpickr-time input:hover,
-        .flatpickr-time .flatpickr-am-pm:hover,
-        .flatpickr-time input:focus,
-        .flatpickr-time .flatpickr-am-pm:focus {
-            background: var(--withdraw-primary);
-            color: white;
-        }
+  .withdraw-form-row.withdraw-full {
+    grid-template-columns: 1fr;
+  }
 
-        /* Responsive adjustments */
-        @media (max-width: 992px) {
-            .withdraw-controls-section {
-                flex-direction: column;
-            }
+  .withdraw-form-group {
+    display: flex;
+    flex-direction: column;
+  }
 
-            .withdraw-filters {
-                flex-direction: column;
-            }
+  .withdraw-form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--withdraw-text-primary);
+    margin-bottom: 10px;
+  }
 
-            .withdraw-date-range-wrapper {
-                flex-direction: column;
-            }
+  .withdraw-form-group input,
+  .withdraw-form-group textarea {
+    padding: 8px 14px;
+    border: 2px solid var(--withdraw-input-border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--withdraw-input-bg);
+    color: var(--withdraw-text-primary);
+    transition: all 0.3s ease;
+  }
 
-            .withdraw-form-row {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
+  #withdrawNarration {
+    height: 85px;
+  }
 
-        @media (max-width: 768px) {
-            .withdraw-form-row {
-                grid-template-columns: 1fr;
-            }
+  .withdraw-form-group input:focus,
+  .withdraw-form-group textarea:focus {
+    outline: none;
+    border-color: var(--withdraw-foucus);
+  }
 
-            .withdraw-actions {
-                flex-direction: column;
-                width: 100%;
-            }
+  .withdraw-modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--withdraw-border-color);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
 
-            .withdraw-actions .withdraw-btn {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="withdraw-container">
-        <div class="withdraw-main-content">
-            <div class="withdraw-controls-section">
-                <div class="withdraw-filters">
-                    <div class="withdraw-date-range-wrapper">
-                        <input type="text" id="withdrawClientCode" placeholder="Enter client code...">
-                    </div>
+  .withdraw-modal-footer .withdraw-btn {
+    padding: 12px 32px;
+    min-width: 120px;
+  }
 
-                    <div class="withdraw-date-range-wrapper">
-                        <input id="withdrawStartDate" class="form-control border field-border-color bg-date-color" type="datetime"
-                            placeholder="From Date" data-enable-time="true" data-date-format="Y-m-d" data-alt-format="d-m-Y"
-                            data-inline="false" data-no-calendar="false" data-mode="single" />
-                        <div class="input-group-append">
-                            <span class="input-group-text" style="color: #ffff; background: #313242; border: 0px;"><i
-                                    class="fa fa-calendar"></i></span>
-                        </div>
-                    </div>
+  /* Flatpickr customization */
+  .flatpickr-calendar {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
 
-                    <div class="withdraw-date-range-wrapper">
-                        <input id="withdrawEndDate" class="form-control border field-border-color bg-date-color" type="datetime"
-                            placeholder="To Date" data-enable-time="true" data-date-format="Y-m-d" data-alt-format="d-m-Y"
-                            data-inline="false" data-no-calendar="false" data-mode="single" />
-                        <div class="input-group-append">
-                            <span class="input-group-text" style="color: #ffff; background: #313242; border: 0px;"><i
-                                    class="fa fa-calendar"></i></span>
-                        </div>
-                    </div>
+  .flatpickr-day.selected {
+    border-color: var(--withdraw-primary);
+  }
 
-                    <div class="withdraw-date-range-wrapper">
-                        <button id="btn-withdraw-search" type="button" class="withdraw-btn withdraw-btn-primary"><i
-                                class="fa fa-search"></i> Search</button>
+  .withdraw-flatpickr-clear {
+    padding: 7px 10px;
+    border: none;
+    border-radius: 0 0 8px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 36px;
+    width: 100%;
+    background: #ff6b6b;
+    color: white;
+  }
 
-                        <button class="withdraw-btn-clear" id="withdraw-btn-clear">
-                            <i class="fa fa-times" aria-hidden="true"></i> Clear
-                        </button>
-                    </div>
-                </div>
+  .withdraw-flatpickr-clear:hover {
+    background: #ff5252;
+  }
 
-                <div class="withdraw-actions">
-                    <button class="withdraw-btn withdraw-btn-primary" id="withdraw-btn-request">
-                        <i class="fa fa-plus" aria-hidden="true"></i> Withdraw Request
-                    </button>
-                    <button class="withdraw-btn withdraw-btn-secondary" id="withdraw-btn-download">
-                        <i class="fa fa-download" aria-hidden="true"></i> Download
-                    </button>
-                </div>
-            </div>
+  .withdraw-edit {
+    background-color: #4CAF50;
+    color: white;
+  }
 
-            <div class="withdraw-table-wrapper">
-                <table class="withdraw-table" id="withdrawDataTable">
-                    <thead class="withdraw-thead">
-                        <tr>
-                            <th class="withdraw-th">Client Code</th>
-                            <th class="withdraw-th">Name</th>
-                            <th class="withdraw-th">Date & Time</th>
-                            <th class="withdraw-th">Amount</th>
-                            <th class="withdraw-th">User</th>
-                        </tr>
-                    </thead>
-                    <tbody class="withdraw-tbody" id="withdrawTableBody"></tbody>
-                </table>
-            </div>
+  .withdraw-delete {
+    background-color: #f44336;
+    color: white;
+  }
 
-            <div style="display: none">
-                <div id="withdraw-request">
-                    <div class="withdraw-modal">
-                        <div class="withdraw-modal-content">
-                            <form onsubmit="withdrawSubmitWithdrawRequest(event)">
-                                <div class="withdraw-form-row">
-                                    <div class="withdraw-form-group">
-                                        <label data-required="*">Client Code</label>
-                                        <input type="text" id="withdrawAbleClientCode" required>
-                                    </div>
-                                    <div class="withdraw-form-group">
-                                        <label data-required="*">Name</label>
-                                        <input type="text" id="withdrawName" required>
-                                    </div>
-                                </div>
-                                <div class="withdraw-form-row">
-                                    <div class="withdraw-form-group">
-                                        <label data-required="*">Balance</label>
-                                        <input type="number" id="withdrawBalance" required>
-                                    </div>
-                                    <div class="withdraw-form-group">
-                                        <label data-required="*">Withdraw Amount</label>
-                                        <input type="number" id="withdrawAmount" required>
-                                    </div>
-                                </div>
-                                <div class="withdraw-form-row withdraw-full">
-                                    <div class="withdraw-form-group">
-                                        <label data-required="*">Narration</label>
-                                        <textarea id="withdrawNarration" required></textarea>
-                                    </div>
-                                </div>
-                                <div class="withdraw-modal-footer">
-                                    <button type="submit" class="withdraw-btn withdraw-btn-primary">Save</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  .withdraw-action-btn:hover {
+    opacity: 0.8;
+  }
+
+  /* ==================== Withdraw Action Modal ==================== */
+
+  /* Status Colors */
+  .withdraw-action-status-pending {
+    color: var(--withdrawmodal-warning);
+    font-weight: 600;
+  }
+
+  .withdraw-action-status-approved {
+    color: var(--withdrawmodal-success);
+    font-weight: 600;
+  }
+
+  .withdraw-action-status-rejected {
+    color: var(--withdrawmodal-danger);
+    font-weight: 600;
+  }
+
+  /* Modal Overlay */
+  .withdraw-action-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .withdraw-action-modal-overlay.active {
+    display: flex;
+  }
+
+  /* Modal Container */
+  .withdraw-action-modal-container {
+    background: var(--withdrawmodal-bg-primary);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px var(--withdrawmodal-shadow);
+    animation: withdraw-action-modalSlideIn 0.3s ease;
+    border: 2px solid var(--withdrawmodal-focus);
+  }
+
+  @keyframes withdraw-action-modalSlideIn {
+    from {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Modal Header */
+  .withdraw-action-modal-header {
+    padding: 8px 6px;
+    border-bottom: 2px solid var(--withdrawmodal-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--withdrawmodal-focus) 0%, #764ba2 100%);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+
+  .withdraw-action-modal-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .withdraw-action-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .withdraw-action-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+    color: #ff6b6b;
+  }
+
+  /* Modal Body */
+  .withdraw-action-modal-body {
+    padding: 10px;
+    background: var(--withdrawmodal-bg-primary);
+  }
+
+  .withdraw-action-form-group {
+    margin-bottom: 20px;
+  }
+
+  .withdraw-action-form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--withdrawmodal-text-primary);
+    margin-bottom: 8px;
+  }
+
+  .withdraw-action-form-group label .withdraw-action-required {
+    color: var(--withdrawmodal-danger);
+    margin-left: 4px;
+  }
+
+  .withdraw-action-form-group select,
+  .withdraw-action-form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--withdrawmodal-input-border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--withdrawmodal-input-bg);
+    color: var(--withdrawmodal-text-primary);
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+
+  .withdraw-action-form-group select:focus,
+  .withdraw-action-form-group textarea:focus {
+    outline: none;
+    border-color: var(--withdrawmodal-focus);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .withdraw-action-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  /* Status Select Styling */
+  .withdraw-action-form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 35px;
+  }
+
+  .withdraw-action-form-group select option {
+    background: var(--withdrawmodal-bg-secondary);
+    color: var(--withdrawmodal-text-primary);
+    padding: 10px;
+  }
+
+  /* Modal Footer */
+  .withdraw-action-modal-footer {
+    padding: 10px 10px;
+    border-top: 2px solid var(--withdrawmodal-border-color);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    background: var(--withdrawmodal-bg-secondary);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  .withdraw-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .withdraw-action-btn-cancel {
+    background: var(--withdrawmodal-text-tertiary);
+    color: white;
+  }
+
+  .withdraw-action-btn-cancel:hover {
+    background: var(--withdrawmodal-text-secondary);
+    transform: translateY(-2px);
+  }
+
+  .withdraw-action-btn-submit {
+    background: linear-gradient(135deg, var(--withdrawmodal-focus) 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .withdraw-action-btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .withdraw-action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* ==================== Bulk Form Modal ==================== */
+  .withdraw-bulk-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .withdraw-bulk-modal-overlay.active {
+    display: flex;
+  }
+
+  .withdraw-bulk-modal-container {
+    background: var(--withdrawmodal-bg-primary);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px var(--withdrawmodal-shadow);
+    animation: withdraw-bulk-modalSlideIn 0.3s ease;
+    border: 2px solid var(--withdrawmodal-success);
+  }
+
+  @keyframes withdraw-bulk-modalSlideIn {
+    from {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .withdraw-bulk-modal-header {
+    padding: 8px 6px;
+    border-bottom: 2px solid var(--withdrawmodal-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, var(--withdrawmodal-success) 0%, #20c997 100%);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+
+  .withdraw-bulk-modal-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .withdraw-bulk-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+
+  .withdraw-bulk-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+    color: #ff6b6b;
+  }
+
+  .withdraw-bulk-modal-body {
+    padding: 10px;
+    background: var(--withdrawmodal-bg-primary);
+  }
+
+  .withdraw-bulk-form-group {
+    margin-bottom: 20px;
+  }
+
+  .withdraw-bulk-form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--withdrawmodal-text-primary);
+    margin-bottom: 8px;
+  }
+
+  .withdraw-bulk-form-group .withdraw-bulk-required {
+    color: var(--withdrawmodal-danger);
+    margin-left: 4px;
+  }
+
+  .withdraw-bulk-file-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .withdraw-bulk-file-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--withdrawmodal-input-border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--withdrawmodal-input-bg);
+    color: var(--withdrawmodal-text-primary);
+    transition: all 0.3s ease;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .withdraw-bulk-file-input:focus {
+    outline: none;
+    border-color: var(--withdrawmodal-success);
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  }
+
+  .withdraw-bulk-file-input::file-selector-button {
+    background: var(--withdrawmodal-success);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .withdraw-bulk-file-input::file-selector-button:hover {
+    background: #218838;
+  }
+
+  .withdraw-bulk-sample-section {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--withdrawmodal-success-light);
+    border-radius: 8px;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+  }
+
+  .withdraw-bulk-sample-section h4 {
+    margin: 0 0 10px 0;
+    color: var(--withdrawmodal-success);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .withdraw-bulk-sample-section p {
+    margin: 0 0 15px 0;
+    color: var(--withdrawmodal-text-secondary);
+    font-size: 13px;
+  }
+
+  .withdraw-bulk-modal-footer {
+    padding: 10px 10px;
+    border-top: 2px solid var(--withdrawmodal-border-color);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    background: var(--withdrawmodal-bg-secondary);
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  .withdraw-bulk-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .withdraw-bulk-btn-cancel {
+    background: var(--withdrawmodal-text-tertiary);
+    color: white;
+  }
+
+  .withdraw-bulk-btn-cancel:hover {
+    background: var(--withdrawmodal-text-secondary);
+    transform: translateY(-2px);
+  }
+
+  .withdraw-bulk-btn-download {
+    background: var(--withdrawmodal-info);
+    color: white;
+  }
+
+  .withdraw-bulk-btn-download:hover {
+    background: #138496;
+    transform: translateY(-2px);
+  }
+
+  .withdraw-bulk-btn-submit {
+    background: linear-gradient(135deg, var(--withdrawmodal-success) 0%, #20c997 100%);
+    color: white;
+  }
+
+  .withdraw-bulk-btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+  }
+
+  .withdraw-bulk-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Helper text styling */
+  small {
+    color: var(--withdrawmodal-text-tertiary);
+  }
+</style>
+
+<div class="withdraw-container">
+  <div class="withdraw-main-content">
+    <div class="withdraw-controls-section">
+      <div class="withdraw-filters">
+        <div class="withdraw-date-range-wrapper">
+          <input class="code_list ui-autocomplete-input" type="text" autocomplete="off" id="withdrawClientCode"
+            placeholder="Search client code...">
         </div>
+
+        <div class="withdraw-date-time-range-wrapper">
+          <input id="withdrawStartDate" type="datetime" placeholder="From Date & Time" />
+          <span class="input-group-text p-0"
+            style="color: var(--withdraw-foucus); background: var(--withdraw-input-bg); border: 0px;"><i
+              class="fa fa-calendar"></i></span>
+
+        </div>
+
+        <div class="withdraw-date-time-range-wrapper">
+          <input id="withdrawEndDate" type="datetime" placeholder="To Date & Time" />
+          <span class="input-group-text p-0"
+            style="color: var(--withdraw-foucus); background: var(--withdraw-input-bg); border: 0px;"><i
+              class="fa fa-calendar"></i></span>
+        </div>
+
+        <div class="withdraw-date-range-wrapper">
+          <button id="btn-withdraw-search" type="button" class="withdraw-btn withdraw-btn-primary"><i
+              class="fa fa-search"></i> Search</button>
+
+          <button class="withdraw-btn withdraw-btn-clear" id="withdraw-btn-clear">
+            <i class="fa fa-times" aria-hidden="true"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="withdraw-actions">
+        <button class="withdraw-btn withdraw-btn-secondary" id="withdraw-btn-refresh">
+          <i class="fa fa-refresh" aria-hidden="true"></i> Refresh
+        </button>
+        {% if current_user.users_roles in ['brokertrader', 'client', 'associate'] %}
+        <button class="withdraw-btn withdraw-btn-bulk" id="withdraw-btn-bulk">
+          <i class="fa fa-file-import" aria-hidden="true"></i> Bulk Form
+        </button>
+        <button class="withdraw-btn withdraw-btn-primary" id="withdraw-btn-request">
+          <i class="fa fa-plus" aria-hidden="true"></i> Withdraw Request
+        </button>
+        {% else %}
+        <button class="withdraw-btn withdraw-btn-secondary" id="withdraw-btn-download">
+          <i class="fa fa-download" aria-hidden="true"></i> Download
+        </button>
+        {% endif %}
+      </div>
     </div>
 
-    <script>
-        // Initialize date pickers
-        const withdrawStartDatePicker = flatpickr("#withdrawStartDate", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            altFormat: "d-m-Y H:i",
-            defaultDate: new Date(),
-            time_12hr: true,
-            minuteIncrement: 1,
-            onReady: function(selectedDates, dateStr, instance) {
-                var $cal = $(instance.calendarContainer);
-                if ($cal.find('.flatpickr-clear').length < 1) {
-                    $cal.append('<button class="btn btn-light my-2 flatpickr-clear">Clear</button>');
-                    $cal.find('.flatpickr-clear').on('click', function() {
-                        instance.clear();
-                        instance.close();
-                    });
-                }
-            }
-        });
-        
-        const withdrawEndDatePicker = flatpickr("#withdrawEndDate", {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            altFormat: "d-m-Y H:i",
-            defaultDate: new Date(),
-            time_12hr: true,
-            minuteIncrement: 1,
-            onReady: function(selectedDates, dateStr, instance) {
-                var $cal = $(instance.calendarContainer);
-                if ($cal.find('.flatpickr-clear').length < 1) {
-                    $cal.append('<button class="btn btn-light my-2 flatpickr-clear">Clear</button>');
-                    $cal.find('.flatpickr-clear').on('click', function() {
-                        instance.clear();
-                        instance.close();
-                    });
-                }
-            }
-        });
+    <div class="withdraw-table-wrapper">
+      <table class="withdraw-table table-dark table-striped" id="withdrawDataTable">
+        <thead class="withdraw-thead">
+          <tr>
+            <th class="withdraw-th text-center">Transaction Id</th>
+            <th class="withdraw-th pl-2">Client Code</th>
+            <th class="withdraw-th">Name</th>
+            <th class="withdraw-th">Date & Time</th>
+            <th class="withdraw-th">Amount</th>
+            <th class="withdraw-th">User</th>
+            <th class="withdraw-th">Status</th>
+            <th class="withdraw-th text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody class="withdraw-tbody" id="withdrawTableBody"></tbody>
+      </table>
+    </div>
+ 
+    <input id="withdrawClientBo" value="" type="hidden" name="withdrawClientBo" class="form-control " />
+  </div>
+</div>
 
-        // Sample data
-        var withdrawSampleData = [
-            {
-                withdrawCode: "CLT001",
-                withdrawName: "John Enterprise",
-                withdrawDateTime: "2025-10-15 09:30",
-                withdrawAmount: "$5,250.00",
-                withdrawUser: "Admin",
-            },
-            {
-                withdrawCode: "CLT002",
-                withdrawName: "Sarah Corp",
-                withdrawDateTime: "2025-10-15 10:45",
-                withdrawAmount: "$3,100.50",
-                withdrawUser: "Manager",
-            },
-            {
-                withdrawCode: "CLT003",
-                withdrawName: "Mike Industries",
-                withdrawDateTime: "2025-10-15 14:15",
-                withdrawAmount: "$8,750.00",
-                withdrawUser: "Agent",
-            },
-            {
-                withdrawCode: "CLT001",
-                withdrawName: "John Enterprise",
-                withdrawDateTime: "2025-10-14 11:20",
-                withdrawAmount: "$2,500.00",
-                withdrawUser: "Admin",
-            },
-            {
-                withdrawCode: "CLT004",
-                withdrawName: "Emma Solutions",
-                withdrawDateTime: "2025-10-14 15:30",
-                withdrawAmount: "$1,250.75",
-                withdrawUser: "Manager",
-            },
-            {
-                withdrawCode: "CLT005",
-                withdrawName: "David Tech",
-                withdrawDateTime: "2025-10-13 08:00",
-                withdrawAmount: "$6,325.00",
-                withdrawUser: "Agent",
-            },
-            {
-                withdrawCode: "CLT002",
-                withdrawName: "Sarah Corp",
-                withdrawDateTime: "2025-10-13 16:45",
-                withdrawAmount: "$4,100.00",
-                withdrawUser: "Admin",
-            },
-            {
-                withdrawCode: "CLT006",
-                withdrawName: "Lisa Holdings",
-                withdrawDateTime: "2025-10-12 10:15",
-                withdrawAmount: "$9,999.99",
-                withdrawUser: "Manager",
-            },
-        ];
+<!-- ==================== Bulk Form Modal ==================== -->
+<div class="withdraw-bulk-modal-overlay" id="withdraw-bulk-modal">
+  <div class="withdraw-bulk-modal-container">
+    <div class="withdraw-bulk-modal-header">
+      <h3>
+        <i class="fa fa-file-import"></i>
+        Bulk Withdrawal Form
+      </h3>
+      <button class="withdraw-bulk-modal-close" onclick="withdrawBulkCloseModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
 
-        var withdrawFilteredData = [...withdrawSampleData];
+    <div class="withdraw-bulk-modal-body">
+      <!-- File Upload Section -->
+      <div class="withdraw-bulk-form-group">
+        <label>
+          Upload File <span class="withdraw-bulk-required">*</span>
+        </label>
+        <div class="withdraw-bulk-file-input-wrapper">
+          <input 
+            type="file" 
+            id="withdraw-bulk-file-input" 
+            class="withdraw-bulk-file-input" 
+            accept=".csv, .xlsx, .xls"
+          >
+        </div>
+        <small style="margin-top: 5px; display: block;">
+          Supported formats: CSV, XLSX, XLS (Max file size: 10MB)
+        </small>
+      </div>
 
-        // Initialize the page
-        $(document).ready(function () {
-            $("#withdrawClientCode").on("input", withdrawApplyFilters);
-            $("#btn-withdraw-search").on("click", withdrawApplyFilters);
-            $("#withdraw-btn-clear").on("click", withdrawClearFilters);
-            $("#withdraw-btn-download").on("click", withdrawDownloadData);
-            $("#withdraw-btn-request").on("click", withdraw_request_window);
-            withdrawRenderTable();
-        });
+      <!-- Sample File Section -->
+      <div class="withdraw-bulk-sample-section">
+        <h4><i class="fa fa-download"></i> Download Sample File</h4>
+        <p>Download our template file to ensure your data is formatted correctly.</p>
+        <button 
+          class="withdraw-bulk-btn withdraw-bulk-btn-download" 
+          id="withdraw-bulk-download-sample"
+          onclick="downloadBulkSample()"
+        >
+          <i class="fa fa-file-excel"></i> Download Sample
+        </button>
+      </div>
+    </div>
 
-        function withdrawClearFilters() {
-            $("#withdrawClientCode").val("");
-            withdrawStartDatePicker.setDate(new Date());
-            withdrawEndDatePicker.setDate(new Date());
-            withdrawFilteredData = [...withdrawSampleData];
-            withdrawRenderTable();
+    <div class="withdraw-bulk-modal-footer">
+      <button
+        class="withdraw-bulk-btn withdraw-bulk-btn-cancel"
+        onclick="withdrawBulkCloseModal()"
+      >
+        <i class="fa fa-times"></i> Cancel
+      </button>
+      <button
+        class="withdraw-bulk-btn withdraw-bulk-btn-submit"
+        id="withdraw-bulk-submit-btn"
+        onclick="submitBulkForm()"
+      >
+        <i class="fa fa-upload"></i> Upload File
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Approval/Rejection Modal ==================== -->
+<div class="withdraw-action-modal-overlay" id="withdraw-action-approval-modal">
+  <div class="withdraw-action-modal-container">
+    <div class="withdraw-action-modal-header">
+      <h3>
+        <i class="fa fa-file-invoice-dollar"></i>
+        <span id="withdraw-action-modal-title">Withdrawal Action</span>
+      </h3>
+      <button class="withdraw-action-modal-close" onclick="withdrawActionCloseModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <div class="withdraw-action-modal-body">
+      <!-- Status Selection -->
+      <div class="withdraw-action-form-group">
+        <label>
+          Status <span class="withdraw-action-required">*</span>
+        </label>
+        <select id="withdraw-action-modal-status">
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <!-- Remarks Input -->
+      <div class="withdraw-action-form-group">
+        <label>
+          Remarks <span class="withdraw-action-required">*</span>
+        </label>
+        <textarea
+          id="withdraw-action-modal-remarks"
+          placeholder="Enter remarks for this action..."
+          maxlength="200"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="withdraw-action-modal-footer">
+      <button
+        class="withdraw-action-btn withdraw-action-btn-cancel"
+        onclick="withdrawActionCloseModal()"
+      >
+        <i class="fa fa-times"></i> Cancel
+      </button>
+      <button
+        class="withdraw-action-btn withdraw-action-btn-submit"
+        id="withdraw-action-modal-submit-btn"
+        onclick="withdrawActionSubmit()"
+      >
+        <i class="fa fa-check"></i> Submit
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript"
+  src="{{ url_for('static', filename='js/page-js/withdraw/withdraw_request.js') }}"></script>
+
+<script>
+  // Bulk Form Modal Functions
+  function openBulkModal() {
+    document.getElementById('withdraw-bulk-modal').classList.add('active');
+  }
+
+  function withdrawBulkCloseModal() {
+    document.getElementById('withdraw-bulk-modal').classList.remove('active');
+    // Reset file input
+    document.getElementById('withdraw-bulk-file-input').value = '';
+  }
+
+  function downloadBulkSample() {
+    // Create sample CSV content
+    const csvContent = "Client Code,Amount,Narration\nCL001,5000,Withdrawal request\nCL002,3000,Monthly withdrawal\nCL003,7500,Emergency funds";
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'withdrawal_bulk_sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    alert('Sample file downloaded successfully!');
+  }
+
+  function submitBulkForm() {
+    const fileInput = document.getElementById('withdraw-bulk-file-input');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+      alert('Please select a file to upload.');
+      return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls)$/)) {
+      alert('Please upload a valid CSV or Excel file.');
+      return;
+    }
+    
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB.');
+      return;
+    }
+    
+    // Here you would typically send the file to your server
+    // For now, we'll just show a success message
+    alert('File uploaded successfully! Processing bulk withdrawals...');
+    
+    // Close modal after successful upload
+    withdrawBulkCloseModal();
+  }
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener for bulk form button
+    const bulkBtn = document.getElementById('withdraw-btn-bulk');
+    if (bulkBtn) {
+      bulkBtn.addEventListener('click', openBulkModal);
+    }
+    
+    // Add event listener for file input change
+    const fileInput = document.getElementById('withdraw-bulk-file-input');
+    if (fileInput) {
+      fileInput.addEventListener('change', function() {
+        const submitBtn = document.getElementById('withdraw-bulk-submit-btn');
+        if (this.files.length > 0) {
+          submitBtn.disabled = false;
+        } else {
+          submitBtn.disabled = true;
         }
+      });
+    }
+  });
+</script>
 
-        function withdrawDownloadData() {
-            alert("Download functionality would be implemented here");
-        }
-
-        function withdrawRenderTable() {
-            var $withdrawTbody = $("#withdrawTableBody");
-            $withdrawTbody.empty();
-
-            if (withdrawFilteredData.length === 0) {
-                $withdrawTbody.append(`
-                    <tr>
-                        <td colspan="5" class="withdraw-empty-state">
-                            <i class="fa fa-inbox" style="font-size: 48px; margin-bottom: 16px;"></i>
-                            <p>No withdrawal records found</p>
-                        </td>
-                    </tr>
-                `);
-                return;
-            }
-
-            withdrawFilteredData.forEach((withdrawItem) => {
-                // Format the date for display
-                const dateObj = new Date(withdrawItem.withdrawDateTime.replace(' ', 'T'));
-                const formattedDate = dateObj.toLocaleDateString() + ' ' + 
-                    dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                var withdrawRow = `
-                    <tr>
-                        <td class="withdraw-td">${withdrawItem.withdrawCode}</td>
-                        <td class="withdraw-td">${withdrawItem.withdrawName}</td>
-                        <td class="withdraw-td">${formattedDate}</td>
-                        <td class="withdraw-td withdraw-amount">${withdrawItem.withdrawAmount}</td>
-                        <td class="withdraw-td">${withdrawItem.withdrawUser}</td>
-                    </tr>
-                `;
-                $withdrawTbody.append(withdrawRow);
-            });
-        }
-
-        function withdrawApplyFilters() {
-            var withdrawClientCode = $("#withdrawClientCode").val().toLowerCase();
-            var withdrawStartDate = $("#withdrawStartDate").val();
-            var withdrawEndDate = $("#withdrawEndDate").val();
-
-            withdrawFilteredData = withdrawSampleData.filter((withdrawItem) => {
-                var withdrawItemDate = withdrawItem.withdrawDateTime;
-                var matchesClientCode = withdrawItem.withdrawCode.toLowerCase().includes(withdrawClientCode);
-                
-                // Date filtering
-                var matchesStartDate = !withdrawStartDate || withdrawItemDate >= withdrawStartDate;
-                var matchesEndDate = !withdrawEndDate || withdrawItemDate <= withdrawEndDate;
-                
-                return matchesClientCode && matchesStartDate && matchesEndDate;
-            });
-
-            withdrawRenderTable();
-        }
-
-        function withdraw_request_window() {
-            // In a real application, this would open a modal
-            // For this example, we'll just show an alert
-            alert("Withdraw Request modal would open here");
-            
-            // Example of how to open a modal if you have one:
-            // $('#withdraw-request').modal('show');
-        }
-
-        function withdrawSubmitWithdrawRequest(event) {
-            event.preventDefault();
-            const form = event.target.closest('form');
-      
-            // Get all form values from the submitted form
-            var withdrawClientCode = form.querySelector("#withdrawAbleClientCode").value;
-            var withdrawName = form.querySelector("#withdrawName").value;
-            var withdrawCurrentBalance = form.querySelector("#withdrawBalance").value;
-            var withdrawAmount = form.querySelector("#withdrawAmount").value;
-            var withdrawNarration = form.querySelector("#withdrawNarration").value;
-
-            // Create new withdraw item
-            var newWithdrawItem = {
-                withdrawCode: withdrawClientCode,
-                withdrawName: withdrawName,
-                withdrawDateTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
-                withdrawAmount: `$${parseFloat(withdrawAmount || 0).toFixed(2)}`,
-                withdrawUser: "You"
-            };
-
-            withdrawSampleData.unshift(newWithdrawItem);
-            withdrawFilteredData = [...withdrawSampleData];
-            withdrawRenderTable();
-
-            // Close modal
-            alert("Withdrawal request submitted successfully!");
-            
-            // Reset form
-            form.reset();
-        }
-    </script>
-</body>
-</html>
+{% endblock %}

@@ -1,7 +1,41 @@
+// ==================== Global Variables ==================== //
 var window_x = 0;
 var window_y = 0;
 var new_x, new_y;
 var withdrawwindow;
+var API_BASE_URL = "https://omsapi.quantbd.com"; // have to add in setting.py base URL when deploy to production
+var bo_token = $("meta#info").attr("data-botoken");
+var withdrawSampleData = [];
+var withdrawFilteredData = [];
+
+// ==================== Initialize Page ==================== //
+$(document).ready(function () {
+  if (system_user_role === "client") {
+    $("#withdrawClientCode").val(system_username).prop("readonly", true);
+    withdrawLoadData(String(system_username));
+  } else {
+    code_input();
+    $("#withdrawClientCode").prop("readonly", false);
+  }
+
+   const bulkBtn = document.getElementById('withdraw-btn-bulk');
+    if (bulkBtn) {
+      bulkBtn.addEventListener('click', openBulkModal);
+    }
+    
+    // Add event listener for file input change
+    const fileInput = document.getElementById('withdraw-bulk-file-input');
+    if (fileInput) {
+      fileInput.addEventListener('change', function() {
+        const submitBtn = document.getElementById('withdraw-bulk-submit-btn');
+        if (this.files.length > 0) {
+          submitBtn.disabled = false;
+        } else {
+          submitBtn.disabled = true;
+        }
+      });
+    }
+});
 
 // ==================== Flatpickr Initialization ==================== //
 var withdrawStartDatePicker = flatpickr("#withdrawStartDate", {
@@ -46,27 +80,10 @@ var withdrawEndDatePicker = flatpickr("#withdrawEndDate", {
   },
 });
 
-// ==================== Global Variables ==================== //
-var API_BASE_URL = "https://omsapi.quantbd.com"; // have to add in setting.py base URL when deploy to production
-var bo_token = $("meta#info").attr("data-botoken");
-var withdrawSampleData = [];
-var withdrawFilteredData = [];
-
-// ==================== Initialize Page ==================== //
-$(document).ready(function () {
-  if (system_user_role === "client") {
-    $("#withdrawClientCode").val(system_username).prop("readonly", true);
-    withdrawLoadData(String(system_username));
-  } else {
-    code_input();
-    $("#withdrawClientCode").prop("readonly", false);
-  }
-});
 
 // ==================== Load Withdraw Data ==================== //
 function withdrawLoadData(clientCode = "") {
-  var token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcl9pZCI6ImJfYTg4MjQzNTMtYzVlOC00MWY1LTk1MjMtYzdkOWUwZGY5YjFhIiwidXNlcm5hbWUiOiJVRlRBRE1JTiIsIm5hbWUiOiJNYWhidWIgTGVtb24iLCJ1c2Vyc19yb2xlcyI6ImJyb2tlcmFkbWluIiwiYWNjX3R5cGUiOiJVRlRDIiwiZGVhbGVyX2dyb3VwX2lkIjpudWxsLCJtYXJnaW5fYWxsb3dlZCI6ZmFsc2UsImJyYW5jaCI6IkhFQUQgT0ZGSUNFIiwiY2xpZW50X2NvZGUiOm51bGwsImV4cCI6MjA3Mzk2NzA3N30.Bo2yMaSErBtAbL-eVKV0JyYq47O9X6e9DDlmZ763NAQ";
+  var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcl9pZCI6ImJfYTg4MjQzNTMtYzVlOC00MWY1LTk1MjMtYzdkOWUwZGY5YjFhIiwidXNlcm5hbWUiOiJVRlRBRE1JTiIsIm5hbWUiOiJNYWhidWIgTGVtb24iLCJ1c2Vyc19yb2xlcyI6ImJyb2tlcmFkbWluIiwiYWNjX3R5cGUiOiJVRlRDIiwiZGVhbGVyX2dyb3VwX2lkIjpudWxsLCJtYXJnaW5fYWxsb3dlZCI6ZmFsc2UsImJyYW5jaCI6IkhFQUQgT0ZGSUNFIiwiY2xpZW50X2NvZGUiOm51bGwsImV4cCI6MjA3Mzk2NzA3N30.Bo2yMaSErBtAbL-eVKV0JyYq47O9X6e9DDlmZ763NAQ";
   var fromDate = $("#withdrawStartDate").val();
   var toDate = $("#withdrawEndDate").val();
 
@@ -119,6 +136,7 @@ function withdrawLoadData(clientCode = "") {
         withdrawUser: item.request_by || "",
         status: item.status || "pending",
         remarks: item.remarks || "",
+        transaction_id : item.transaction_id || "",
       }));
 
       withdrawFilteredData = [...withdrawSampleData];
@@ -164,16 +182,20 @@ function withdrawRenderTable() {
 
     // Determine action buttons based on status
     let actionButtons = "";
+    let currentStatus = "";
     if (item.status === "pending") {
+      currentStatus = 'Pending';
       actionButtons = `
-        <button class="withdraw-action-btn withdraw-edit" onclick="withdrawActionOpenModal(${index} , 'approved')"><i class="fa fa-check"></i></button>
-        <button class="withdraw-action-btn ml-2 withdraw-delete" onclick="withdrawActionOpenModal(${index}, 'rejected')"><i class="fa fa-times"></i></button>
+        <button class="withdraw-action-btn withdraw-edit" onclick="withdrawActionOpenModal('${item.transaction_id}' , 'approved')"><i class="fa fa-check"></i></button>
+        <button class="withdraw-action-btn ml-2 withdraw-delete" onclick="withdrawActionOpenModal('${item.transaction_id}', 'rejected')"><i class="fa fa-times"></i></button>
       `;
     } else if (item.status === "approved") {
+      currentStatus = 'Approved';
       actionButtons = `
-        <span class="text-success">Approved</span>
+        <i class="text-muted fa fa-lock" style="font-size: 17px;"></i>
       `;
     } else if (item.status === "rejected") {
+      currentStatus = 'Rejected';
       actionButtons = `
         <span class="text-danger">Rejected</span>
       `;
@@ -181,14 +203,14 @@ function withdrawRenderTable() {
 
     $tbody.append(`
       <tr>
-        <td class="withdraw-td text-center">${index + 1}</td>
+        <td class="withdraw-td text-center">${item.transaction_id}</td>
         <td class="withdraw-td pl-2">${item.withdrawCode}</td>
         <td class="withdraw-td">${item.withdrawName}</td>
         <td class="withdraw-td">${formattedDate}</td>
         <td class="withdraw-td withdraw-amount">${item.withdrawAmount}</td>
         <td class="withdraw-td">${item.withdrawUser}</td>
-        <td class="withdraw-td withdraw-action-status-${item.status}">${item.status}</td>
-        <td class="withdraw-td d-flex">
+        <td class="withdraw-td withdraw-action-status-${item.status}">${currentStatus}</td>
+        <td class="withdraw-td d-flex d-flex justify-content-center align-items-center">
           ${actionButtons}
         </td> 
       </tr>
@@ -235,10 +257,7 @@ function withdrawApplyFilters(code) {
 // ==================== Helpers ==================== //
 function getCurrentDate() {
   const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(now.getDate()).padStart(2, "0")}`;
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2,"0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
 // ==================== UI Event Handlers ==================== //
@@ -281,7 +300,9 @@ $(document).on("click", "#withdraw-btn-request", function () {
 
 function withdrawal_client_data(withdrawal_code) {
   if (withdrawal_code.length) {
-    $.getJSON("shared/getclientdata/",{cln_code: withdrawal_code,},
+    $.getJSON(
+      "shared/getclientdata/",
+      { cln_code: withdrawal_code },
       function (data) {
         $("#withdrawName").val(data.cln_name);
         $("#withdrawBalance").val(data.b_limit);
@@ -289,6 +310,96 @@ function withdrawal_client_data(withdrawal_code) {
       }
     );
   }
+}
+
+// ==================== Download Withdraw Data as CSV (jQuery Version) ==================== //
+function withdrawDownloadData() {
+  const token = "1OBfkob2kR6i6iECMRWmSO0ejX5CH1QOEpIesP0shg6cwfZ8scoqpizqPPSbSQTb";
+  
+  const clientCode = $("#withdrawClientCode").val();
+  const fromDate = $("#withdrawStartDate").val();
+  const toDate = $("#withdrawEndDate").val();
+
+  // Date format conversion function
+  const convertToAPIDateFormat = (dateStr) => {
+    if (!dateStr) return "";
+    const [datePart, timePart] = dateStr.split(" ");
+    const [day, month, year] = datePart.split("-");
+    return `${year}-${month}-${day} ${timePart}`;
+  };
+
+  // Prepare request data
+  const requestData = {
+    user_role: system_user_role,
+    request_by: system_username,
+    client_code: clientCode || "",
+    from_date: convertToAPIDateFormat(fromDate) || "",
+    to_date: convertToAPIDateFormat(toDate) || "",
+    user_id: bo_token || "",
+  };
+
+  // Remove empty keys
+  Object.keys(requestData).forEach((key) => {
+    if (!requestData[key]) delete requestData[key];
+  });
+
+  // Show loading state
+  const downloadBtn = $("#withdraw-btn-download");
+  const originalText = downloadBtn.html();
+  downloadBtn.html('<i class="fa fa-spinner fa-spin"></i> Downloading...');
+  downloadBtn.prop('disabled', true);
+
+  // Make POST request using jQuery
+  $.ajax({
+    url: `${API_BASE_URL}/withdrawal/requests/download`,
+    method: "POST",
+    headers: {
+      Authorization: `${token}`,
+      TokenType: "basic",
+    },
+    data: JSON.stringify(requestData),
+    contentType: "application/json",
+    xhrFields: {
+      responseType: 'blob'
+    },
+    success: function(blob, status, xhr) {
+      // Get filename from response headers or generate one
+      let filename = "withdrawal_requests.csv";
+      const disposition = xhr.getResponseHeader('Content-Disposition');
+      if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) {
+          filename = matches[1].replace(/['"]/g, '');
+        }
+      } else {
+        // Generate filename with timestamp if not provided by server
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        filename = `withdrawal_requests_${timestamp}.csv`;
+      }
+
+      // Create download link for CSV
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      show_flash_messages('Withdrawal data downloaded successfully as CSV!', 'success');
+    },
+    error: function(xhr, status, error) {
+      console.error('Error downloading withdrawal data:', error);
+      show_flash_messages(`Download failed: ${error}`, 'danger');
+    },
+    complete: function() {
+      // Restore button state
+      downloadBtn.html(originalText);
+      downloadBtn.prop('disabled', false);
+    }
+  });
 }
 
 $(document).on("click", "#withdrawSubmit", function (e) {
@@ -373,223 +484,322 @@ $(document).on("click", "#withdrawSubmit", function (e) {
   }
 });
 
-
 function withdraw_request_window() {
   if (withdrawwindow != undefined) {
-    withdrawwindow.close();
+    withdrawwindow.focus();
+    return;
   }
-  if (withdrawwindow == undefined) {
-    withdrawwindow = new WinBox("Withdraw Request", {
-      class: "no-min no-max no-full no-resize",
-      onclose: function (force) {
-        withdrawwindow = undefined;
-        // clonedWithdrawForm = null;
-        window_x = new_x;
-        window_y = new_y;
-      },
-      onmove: function (x, y) {
-        new_x = x;
-        new_y = y;
-      },
-      onfocus: function () {},
-    });
-    var node = document.getElementById("withdraw-request");
-    $(".winbox").css({
-      border: "2px solid rgb(14 193 229 / 83%)",
-      "border-radius": "5px",
-      padding: "5px",
-    });
 
-    $(".wb-body").css({
-      "border-bottom-left-radius": "5px",
-      "border-bottom-right-radius": "5px",
-    });
-    withdrawwindow.mount(node);
-    withdrawwindow.resize("700px", "435px");
+  withdrawwindow = new WinBox("Withdraw Request", {
+    class: "no-min no-max no-full no-resize",
+    html: `
+       <div class="withdraw-modal">
+          <div class="withdraw-modal-content">
+            <form>
+              <div class="withdraw-form-row">
+                <div class="withdraw-form-group">
+                  <label data-required="*">Client Code</label>
+                  <input class="code_list ui-autocomplete-input" type="text" autocomplete="off"
+                    id="withdrawAbleClientCode" required placeholder="Search client code...">
+                </div>
+                <div class="withdraw-form-group">
+                  <label data-required="*">Name</label>
+                  <input type="text" id="withdrawName" required>
+                </div>
+              </div>
+              <div class="withdraw-form-row">
+                <div class="withdraw-form-group">
+                  <label data-required="*">Balance</label>
+                  <input type="number" id="withdrawBalance" required>
+                </div>
+                <div class="withdraw-form-group">
+                  <label data-required="*">Withdraw Amount</label>
+                  <input type="number" id="withdrawAmount" required>
+                </div>
+              </div>
+              <div class="withdraw-form-row withdraw-full">
+                <div class="withdraw-form-group">
+                  <label data-required="*">Narration</label>
+                  <textarea id="withdrawNarration" maxlength="100" required>Withdraw </textarea>
+                </div>
+              </div>
+              <div class="withdraw-modal-footer">
+                <button id="withdrawSubmit" type="button" class="withdraw-btn withdraw-btn-primary">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+    `,
+    onclose: function (force) {
+      withdrawwindow = undefined;
+      window_x = new_x;
+      window_y = new_y;
+    },
+    onmove: function (x, y) {
+      new_x = x;
+      new_y = y;
+    },
+  });
 
-    if (window_x == 0 && window_y == 0) {
-      withdrawwindow.move("center", "5%");
-    } else {
-      withdrawwindow.x = window_x;
-      withdrawwindow.y = window_y;
-      withdrawwindow.move();
-    }
+  // Apply styles
+  $(".winbox").css({
+    border: "2px solid rgb(14 193 229 / 83%)",
+    "border-radius": "5px",
+    padding: "5px",
+  });
 
-    withdrawwindow.setBackground("rgb(2,0,36)");
-    withdrawwindow.setBackground(
-      "linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(9,81,121,1) 0%, rgba(2,173,230,1) 0%, rgba(0,212,255,1) 3%, rgba(2,172,229,1) 13%, rgba(9,13,123,1) 100%)"
-    );
+  $(".wb-body").css({
+    "border-bottom-left-radius": "5px",
+    "border-bottom-right-radius": "5px",
+    "background-color": "white",
+  });
+
+  withdrawwindow.resize("700px", "432px");
+  withdrawwindow.move("center", "5%");
+
+  // Initialize form for client role
+  if (system_user_role === "client") {
+    $("#withdrawAbleClientCode").val(system_username).prop("readonly", true);
+    withdrawal_client_data(String(system_username));
   }
+
+  // Add form submit handler
+  $("#withdrawRequestForm").on("submit", function (e) {
+    e.preventDefault();
+    $("#withdrawSubmit").trigger("click");
+  });
 }
 
-  let withdrawActionCurrentIndex = null;
-  let withdrawActionCurrentType = null;
+var withdrawActionCurrentIds = [];
+var withdrawActionCurrentType = null;
 
-  // Open Modal
-  function withdrawActionOpenModal(index, actionType) {
-    const request = withdrawFilteredData[index];
-    withdrawActionCurrentIndex = index;
-    withdrawActionCurrentType = actionType;
+// Open Modal with array of transaction_ids
+function withdrawActionOpenModal(transaction_ids, actionType) {
+  // Ensure transaction_ids is an array
+  const idsArray = Array.isArray(transaction_ids) ? transaction_ids : [transaction_ids];
+  
+  console.log("Open Modal Transaction IDs:", idsArray, "Action Type:", actionType);
 
-    const modalTitle = document.getElementById("withdraw-action-modal-title");
-    if (actionType === "approved") {
-      modalTitle.innerHTML =
-        '<i class="fa fa-check-circle"></i> Approve Withdrawal';
-    } else {
-      modalTitle.innerHTML =
-        '<i class="fa fa-times-circle"></i> Reject Withdrawal';
-    }
+  withdrawActionCurrentIds = idsArray;
+  withdrawActionCurrentType = actionType;
 
-    document.getElementById("withdraw-action-modal-status").value = actionType;
-    document.getElementById("withdraw-action-modal-remarks").value =
-      actionType === "approved"
-        ? "Withdrawal approved by admin"
-        : "Withdrawal rejected by admin";
-
-    document
-      .getElementById("withdraw-action-approval-modal")
-      .classList.add("active");
+  const modalTitle = document.getElementById("withdraw-action-modal-title");
+  
+  if (actionType === "approved") {
+    modalTitle.innerHTML = `Approve Withdrawal`;
+  } else {
+    modalTitle.innerHTML = `Reject Withdrawal`;
   }
 
-  // Close Modal
-  function withdrawActionCloseModal() {
-    document
-      .getElementById("withdraw-action-approval-modal")
-      .classList.remove("active");
-    withdrawActionCurrentIndex = null;
-    withdrawActionCurrentType = null;
+  document.getElementById("withdraw-action-modal-status").value = actionType;
 
-    document.getElementById("withdraw-action-modal-status").value = "approved";
-    document.getElementById("withdraw-action-modal-remarks").value = "";
+  if (idsArray.length) { 
+    document.getElementById("withdraw-action-modal-remarks").value =  actionType === "approved"  ? "Withdrawal approved by admin"  : "Withdrawal rejected by admin";
   }
 
-  // Submit Action
-  function withdrawActionSubmit() {
-    const status = document.getElementById("withdraw-action-modal-status").value;
-    const remarks = document
-      .getElementById("withdraw-action-modal-remarks")
-      .value.trim();
+  document.getElementById("withdraw-action-approval-modal").classList.add("active");
+}
 
-    if (!remarks) {
-      alert("Please enter remarks for this action.");
-      return;
-    }
+// Close Modal
+function withdrawActionCloseModal() {
+  document.getElementById("withdraw-action-approval-modal").classList.remove("active");
+  withdrawActionCurrentIds = [];
+  withdrawActionCurrentType = null;
 
-    if (withdrawActionCurrentIndex === null) {
-      alert("Invalid request. Please try again.");
-      return;
-    }
+  document.getElementById("withdraw-action-modal-status").value = "approved";
+  document.getElementById("withdraw-action-modal-remarks").value = "";
+}
 
-    const submitBtn = document.getElementById(
-      "withdraw-action-modal-submit-btn"
-    );
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+// Submit Action for multiple transactions
+function withdrawActionSubmit() {
+  const status = document.getElementById("withdraw-action-modal-status").value;
+  const remarks = document.getElementById("withdraw-action-modal-remarks").value.trim();
 
-    withdrawActionHandle(withdrawActionCurrentIndex, status, remarks);
+  if (!remarks) {
+    alert("Please enter remarks for this action.");
+    return;
   }
 
-  // Close modal on overlay click
-  document
-    .getElementById("withdraw-action-approval-modal")
-    .addEventListener("click", function (e) {
-      if (e.target === this) {
-        withdrawActionCloseModal();
+  if (withdrawActionCurrentIds.length === 0) {
+    alert("No transactions selected. Please try again.");
+    return;
+  }
+
+  const submitBtn = document.getElementById("withdraw-action-modal-submit-btn");
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Processing...';
+
+  withdrawActionHandleMultiple(withdrawActionCurrentIds, status, remarks);
+}
+
+// ==================== Handle Multiple Withdrawal Status Updates ==================== //
+function withdrawActionHandleMultiple(transaction_ids, actionType, remarksText) {
+  const token = "1OBfkob2kR6i6iECMRWmSO0ejX5CH1QOEpIesP0shg6cwfZ8scoqpizqPPSbSQTb";
+  const isApproved = actionType === "approved";
+
+  // Prepare request data with transaction_ids array
+  const requestData = {
+    transaction_ids: transaction_ids, // Always send as array
+    status: actionType,
+    remarks: remarksText,
+    user_id: bo_token,
+    request_by: system_username
+  };
+
+  // Update UI instantly for all selected transactions
+  transaction_ids.forEach(transaction_id => {
+    const request = withdrawFilteredData.find(item => item.transaction_id === transaction_id);
+    if (request) {
+      request.status = actionType;
+      request.remarks = remarksText;
+
+      // Also update in the main sample data
+      const mainIndex = withdrawSampleData.findIndex(item => item.transaction_id === transaction_id);
+      if (mainIndex !== -1) {
+        withdrawSampleData[mainIndex].status = actionType;
+        withdrawSampleData[mainIndex].remarks = remarksText;
       }
-    });
-
-  // Close modal on Escape key
-  document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") {
-      withdrawActionCloseModal();
     }
   });
 
-  // Update remarks dynamically
-  document
-    .getElementById("withdraw-action-modal-status")
-    .addEventListener("change", function (e) {
-      const remarksField = document.getElementById(
-        "withdraw-action-modal-remarks"
-      );
-      remarksField.value =
-        e.target.value === "approved"
-          ? "Withdrawal approved by admin"
-          : "Withdrawal rejected by admin";
-    });
+  console.log("Submitting API Request Data:", requestData);
 
+  // Send single API request for all transactions
+  $.ajax({
+    url: `${API_BASE_URL}/withdrawal/update-status`,
+    method: "PUT",
+    headers: {
+      Authorization: `${token}`,
+      TokenType: "basic",
+    },
+    contentType: "application/json",
+    data: JSON.stringify(requestData),
+    success: function (response) {
+      const submitBtn = document.getElementById("withdraw-action-modal-submit-btn");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Submit';
 
-    // ==================== Unified Withdraw Status Update Function ==================== //
-  function withdrawActionHandle(index, actionType, remarksText) {
-    const request = withdrawFilteredData[index];
-    const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcl9pZCI6ImJfYTg4MjQzNTMtYzVlOC00MWY1LTk1MjMtYzdkOWUwZGY5YjFhIiwidXNlcm5hbWUiOiJVRlRBRE1JTiIsIm5hbWUiOiJNYWhidWIgTGVtb24iLCJ1c2Vyc19yb2xlcyI6ImJyb2tlcmFkbWluIiwiYWNjX3R5cGUiOiJVRlRDIiwiZGVhbGVyX2dyb3VwX2lkIjpudWxsLCJtYXJnaW5fYWxsb3dlZCI6ZmFsc2UsImJyYW5jaCI6IkhFQUQgT0ZGSUNFIiwiY2xpZW50X2NvZGUiOm51bGwsImV4cCI6MjA3Mzk2NzA3N30.Bo2yMaSErBtAbL-eVKV0JyYq47O9X6e9DDlmZ763NAQ";
-
-    const isApproved = actionType === "approved";
-
-    const requestData = {
-      client_code: request.withdrawCode,
-      amount: parseFloat(request.withdrawAmount),
-      status: actionType,
-      remarks: remarksText,
-      user_id: bo_token,
-      ...(isApproved
-        ? { approved_by: system_username }
-        : { rejected_by: system_username }),
-    };
-
-    // Update UI instantly
-    request.status = actionType;
-    request.remarks = remarksText;
-
-    const mainIndex = withdrawSampleData.findIndex(
-      (item) =>
-        item.withdrawCode === request.withdrawCode &&
-        item.withdrawDateTime === request.withdrawDateTime &&
-        item.withdrawAmount === request.withdrawAmount
-    );
-
-    if (mainIndex !== -1) {
-      withdrawSampleData[mainIndex].status = actionType;
-      withdrawSampleData[mainIndex].remarks = remarksText;
-    }
-
-    $.ajax({
-      url: `${API_BASE_URL}/withdrawal/update-status`,
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        TokenType: "sync-token",
-      },
-      contentType: "application/json",
-      data: JSON.stringify(requestData),
-      success: function () {
-        const msg = isApproved
-          ? "Withdrawal request approved successfully!"
-          : "Withdrawal request rejected successfully!";
-        show_flash_messages(msg, "success");
-        withdrawRenderTable();
-        withdrawActionCloseModal();
-      },
-      error: function (xhr) {
-        console.error(`Error ${actionType} withdrawal request:`, xhr);
-
-        request.status = "pending";
-        request.remarks = "";
+      const msg = isApproved
+        ? `Successfully approved withdrawal request!`
+        : `Successfully rejected withdrawal request!`;
+      
+      show_flash_messages(msg, "success");
+      withdrawRenderTable();
+      withdrawActionCloseModal();
+    },
+    error: function (xhr) {
+      console.error(`Error ${actionType} withdrawal requests:`, xhr);
+      
+      // Revert UI changes for all transactions on error
+      transaction_ids.forEach(transaction_id => {
+        const request = withdrawFilteredData.find(item => item.transaction_id === transaction_id);
+        if (request) {
+          request.status = "pending";
+          request.remarks = "";
+        }
+        
+        const mainIndex = withdrawSampleData.findIndex(item => item.transaction_id === transaction_id);
         if (mainIndex !== -1) {
           withdrawSampleData[mainIndex].status = "pending";
           withdrawSampleData[mainIndex].remarks = "";
         }
+      });
 
-        const errMsg = isApproved
-          ? "Failed to approve withdrawal request. Please try again."
-          : "Failed to reject withdrawal request. Please try again.";
-        show_flash_messages(errMsg, "danger");
-        withdrawRenderTable();
-      },
-    });
+      const submitBtn = document.getElementById("withdraw-action-modal-submit-btn");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Submit';
+
+      const errMsg = isApproved
+        ? `Failed to approve withdrawal request.Please try again.`
+        : `Failed to reject withdrawal request.Please try again.`;
+      
+      show_flash_messages(errMsg, "danger");
+      withdrawRenderTable();
+    }
+  });
+}
+
+// Close modal on overlay click
+document.getElementById("withdraw-action-approval-modal").addEventListener("click", function (e) {
+  if (e.target === this) {
+    withdrawActionCloseModal();
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    withdrawActionCloseModal();
+  }
+});
+
+// Update remarks dynamically
+document.getElementById("withdraw-action-modal-status").addEventListener("change", function (e) {
+  const remarksField = document.getElementById("withdraw-action-modal-remarks");
+  const count = withdrawActionCurrentIds.length;
+  
+  if (count) {
+    remarksField.value = e.target.value === "approved" ? "Withdrawal approved by admin" : "Withdrawal rejected by admin";
+  }
+});
+ 
+
+
+ //===================== Bulk Form Modal Functions==============================//
+  function openBulkModal() {
+    document.getElementById('withdraw-bulk-modal').classList.add('active');
   }
 
+  function withdrawBulkCloseModal() {
+    document.getElementById('withdraw-bulk-modal').classList.remove('active');
+    // Reset file input
+    document.getElementById('withdraw-bulk-file-input').value = '';
+  }
+
+  function downloadBulkSample() {
+    // Create sample CSV content
+    const csvContent = "Client Code,Amount,Narration\nCL001,5000,Withdrawal request\nCL002,3000,Monthly withdrawal\nCL003,7500,Emergency funds";
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'withdrawal_bulk_sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    show_flash_messages('Sample file downloaded successfully!', 'success');
+  }
+
+  function submitBulkForm() {
+    const fileInput = document.getElementById('withdraw-bulk-file-input');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+      show_flash_messages('Please select a file to upload.' , 'danger');
+      return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls)$/)) {
+      show_flash_messages('Please upload a valid CSV or Excel file.', 'danger');
+      return;
+    }
+    
+    // Here you would typically send the file to your server
+    // For now, we'll just show a success message
+     show_flash_messages('File uploaded successfully! Processing bulk withdrawals...', 'success');
+    
+    // Close modal after successful upload
+    withdrawBulkCloseModal();
+  }
+
+ 
 
   {% extends utils.set_layout() %}
 
