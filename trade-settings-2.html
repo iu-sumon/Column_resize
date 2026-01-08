@@ -1,737 +1,445 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Interface</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>সিলেট–শ্রীমঙ্গল ট্যুর গাইড PDF ডাউনলোড</title>
+    <!-- বাংলা ফন্ট সাপোর্ট -->
+    <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet">
+    <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Kalpurush', 'SolaimanLipi', 'Segoe UI', Arial, sans-serif;
         }
-
-        :root {
-            --bg-primary: #0a0e17;
-            --bg-secondary: #161b28;
-            --bg-tertiary: #1e2433;
-            --text-primary: #ffffff;
-            --text-secondary: #8b93a7;
-            --accent-yellow: #f0b90b;
-            --accent-green: #0ecb81;
-            --accent-red: #f6465d;
-            --border-color: #2b3139;
-        }
-
-        body.light-mode {
-            --bg-primary: #f5f5f5;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #fafafa;
-            --text-primary: #1e2433;
-            --text-secondary: #5e6673;
-            --border-color: #e5e7eb;
-        }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
+            direction: ltr; /* Ensuring proper text direction */
         }
-
-        .header {
-            background: var(--bg-secondary);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-
-        .header-left {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--accent-yellow);
-        }
-
-        .trade-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 12px 32px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-buy {
-            background: var(--accent-green);
+        
+        header {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
             color: white;
+            padding: 30px 25px;
+            text-align: center;
         }
-
-        .btn-buy:hover {
-            background: #0eb876;
-        }
-
-        .btn-sell {
-            background: var(--accent-red);
-            color: white;
-        }
-
-        .btn-sell:hover {
-            background: #e5415a;
-        }
-
-        .theme-toggle {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .theme-toggle:hover {
-            background: var(--border-color);
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-        }
-
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            z-index: 1001;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-header {
-            padding: 24px 28px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
+        
+        h1 {
             font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 25px;
+        }
+        
+        .tour-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .highlight-card {
+            background: #f1f8e9;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .highlight-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .highlight-card i {
+            font-size: 24px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .highlight-card h3 {
+            font-size: 14px;
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+        
+        .highlight-card p {
+            font-size: 12px;
+            color: #388e3c;
+        }
+        
+        .details {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .details h2 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 8px;
+        }
+        
+        .details ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .details li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .details li:before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .download-section {
+            text-align: center;
+            padding: 20px;
+            background: #f1f8e9;
+            border-radius: 10px;
+            margin: 25px 0;
+        }
+        
+        .download-btn {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
             cursor: pointer;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .modal-close:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .modal-body {
-            padding: 28px;
-        }
-
-        .order-type {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .order-type-btn {
-            flex: 1;
-            padding: 12px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .order-type-btn.active {
-            background: var(--accent-yellow);
-            color: #000;
-            border-color: var(--accent-yellow);
-        }
-
-        .margin-btn {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 14px;
-            border-radius: 6px;
-            width: 100%;
-            cursor: pointer;
-            font-size: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .margin-btn:hover {
-            border-color: var(--accent-yellow);
-        }
-
-        .margin-info {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .crypto-icon {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .icon-btc, .icon-usdt {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .icon-btc {
-            background: #f7931a;
-            color: white;
-        }
-
-        .icon-usdt {
-            background: #26a17b;
-            color: white;
-        }
-
-        .isolated-badge {
-            background: var(--bg-primary);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .leverage-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .current-leverage {
-            color: var(--accent-yellow);
-            font-weight: 600;
-        }
-
-        .leverage-input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            font-size: 15px;
-            margin-bottom: 20px;
-        }
-
-        .container {
-            width: 100%;
-            background: var(--bg-tertiary);
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        } 
-        
-        .street-container {
-            position: relative;
-            margin: 50px 0;
-            padding: 0 20px;
-        }
-        
-        .street-line {
-            height: 1px;
-            background: linear-gradient(90deg, #333 0%, #555 50%, #333 100%);
-            border-radius: 2px;
-            position: relative;
-        }
-        
-        .rhombus-container {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            transform: translateY(-50%);
-            display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
-        }
-        
-        .rhombus-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-        
-        .rhombus {
-            width: 10px;
-            height: 10px;
-            background: #020202;
-            transform: rotate(45deg);
-            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.4);
             transition: all 0.3s ease;
-            border: 1px solid #666;
-            margin-bottom: 8px;
-            top: 14px;
-        }
-        
-        .rhombus.active {
-            background: var(--accent-yellow);
-            border-color: var(--accent-yellow); 
-        }
-        
-        .rhombus-value {
-            color: #888;
             font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            position: relative;
-            top: 10px;
+            font-family: 'Kalpurush', 'SolaimanLipi', Arial, sans-serif;
         }
         
-        .rhombus.active .rhombus-value {
-            color: var(--accent-yellow); 
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.6);
         }
         
-        .selection-indicator {
-            position: absolute;
-            top: 50%;
-            height: 2px;
-            background: var(--accent-yellow);
-            border-radius: 4px;
-            transform: translateY(-50%);
-            transition: all 0.4s ease;
-            z-index: 1;
-        } 
-      
-        .arrow {
-            color: var(--text-secondary);
-            font-size: 18px;
+        .download-btn:active {
+            transform: translateY(1px);
         }
- 
-        .borrow-info {
-            background: var(--bg-tertiary);
-            padding: 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-
-        .borrow-text {
+        
+        .note {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
             font-size: 14px;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
         }
-
-        .borrow-amount {
-            font-size: 16px;
-            color: var(--text-primary);
-            font-weight: 500;
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
         }
-
-        .warning-text {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        .warning-text a {
-            color: var(--accent-yellow);
-            text-decoration: none;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn-cancel {
-            flex: 1;
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-cancel:hover {
-            background: var(--border-color);
-        }
-
-        .btn-confirm {
-            flex: 1;
-            background: var(--accent-yellow);
-            color: #000;
-            font-weight: 600;
-        }
-
-        .btn-confirm:hover {
-            background: #f5c542;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            background: var(--bg-tertiary);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s;
-            border: 1px solid var(--border-color);
-        }
-
-        .toggle-switch.active {
-            background: var(--accent-yellow);
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(22px);
+        
+        @media (max-width: 600px) {
+            .tour-highlights {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .download-btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <div class="logo">⚡ TradeX</div>
-            <div class="trade-buttons">
-                <button class="btn btn-buy" id="buyBtn">Buy</button>
-                <button class="btn btn-sell" id="sellBtn">Sell</button>
-            </div>
-        </div>
-        <button class="theme-toggle" id="themeToggle">🌓 Theme</button>
-    </div>
-
-    <!-- Order Window Modal -->
-    <div class="modal-overlay" id="orderModalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title" id="orderModalTitle">Buy BTC/USDT</h2>
-                <button class="modal-close" id="closeOrderModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="order-type">
-                    <button class="order-type-btn active">Limit</button>
-                    <button class="order-type-btn">Market</button>
-                    <button class="order-type-btn">Stop</button>
+    <div class="container">
+        <header>
+            <h1>সিলেট–শ্রীমঙ্গল ২ দিন ১ রাত ট্যুর গাইড</h1>
+            <p class="subtitle">ট্যুর তারিখ: ১৮–১৯ ডিসেম্বর ২০২৫</p>
+        </header>
+        
+        <div class="content">
+            <div class="tour-highlights">
+                <div class="highlight-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>১০+ আকর্ষণীয় স্থান</h3>
+                    <p>শাদা পাথর, পাংথুমাই, বিসনাকান্দি, লাওয়াছড়া</p>
                 </div>
-
-                <button class="margin-btn" id="marginBtn">
-                    <div class="margin-info">
-                        <div class="crypto-icon">
-                            <div class="icon-btc">₿</div>
-                            <div class="icon-usdt">₮</div>
-                        </div>
-                        <span>BTC/USDT</span>
-                        <span class="isolated-badge">Isolated</span>
-                    </div>
-                    <span class="arrow">›</span>
+                <div class="highlight-card">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>বিস্তারিত খরচ</h3>
+                    <p>প্রতি জন ৩২০০-৪৫০০ টাকা</p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fas fa-heart"></i>
+                    <h3>কাপল ফ্রেন্ডলি স্পট</h3>
+                    <p>৬টি রোমান্টিক স্থান</p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fas fa-map"></i>
+                    <h3>গুগল ম্যাপস লিংক</h3>
+                    <p>সকল স্থানের লোকেশন</p>
+                </div>
+            </div>
+            
+            <div class="details">
+                <h2>ট্যুর গাইডে যা যা পাবেন:</h2>
+                <ul>
+                    <li>দিনভিত্তিক বিস্তারিত সময়সূচী</li>
+                    <li>প্রতিটি স্থানের এন্ট্রি ফি ও খরচ</li>
+                    <li>কাপল ফ্রেন্ডলি বিশেষ স্থানসমূহ</li>
+                    <li>গুগল ম্যাপস সহ প্রতিটি স্থানের লোকেশন</li>
+                    <li>খাবারের জন্য বাজেট ও সুপারিশ</li>
+                    <li>স্থানীয় পরিবহনের খরচ ও অপশন</li>
+                    <li>হোটেল বুকিং ও থাকার খরচ</li>
+                </ul>
+            </div>
+            
+            <div class="note">
+                <p><strong>দ্রষ্টব্য:</strong> এই ট্যুর গাইডটি বিশেষভাবে কাপলদের জন্য ডিজাইন করা হয়েছে, তবে পরিবার ও বন্ধুদের জন্যও উপযোগী।</p>
+            </div>
+            
+            <div class="download-section">
+                <button class="download-btn" id="downloadPdf">
+                    <i class="fas fa-download"></i> PDF গাইড ডাউনলোড করুন
                 </button>
-
-                <div class="leverage-control">
-                    <div class="leverage-label">
-                        <span>Leverage</span>
-                        <span class="current-leverage">10x</span>
-                    </div>
-                </div>
+                <p style="margin-top: 15px; font-size: 14px; color: #666;">ডাউনলোড বাটনে ক্লিক করলে সম্পূর্ণ ট্যুর গাইড PDF ফরম্যাটে ডাউনলোড হবে</p>
             </div>
         </div>
+        
+        <footer>
+            <p>© ২০২৫ সিলেট–শ্রীমঙ্গল ট্যুর গাইড | সকল অধিকার সংরক্ষিত</p>
+        </footer>
     </div>
 
-    <!-- Margin Modal -->
-    <div class="modal-overlay" id="marginModalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 class="modal-title">Adjust Max Leverage</h2>
-                <button class="modal-close" id="closeMarginModal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <button class="margin-btn">
-                    <div class="margin-info">
-                        <div class="crypto-icon">
-                            <div class="icon-btc">₿</div>
-                            <div class="icon-usdt">₮</div>
-                        </div>
-                        <span>BTC/USDT</span>
-                        <span class="isolated-badge">Isolated</span>
-                    </div>
-                    <div class="toggle-switch active">
-                        <div class="toggle-slider"></div>
-                    </div>
-                </button>
-
-                <div class="leverage-control">
-                    <div class="leverage-label">
-                        <span>Max Leverage</span>
-                        <span class="current-leverage">Current: <span id="currentLeverage">10</span>x</span>
-                    </div>
-
-                    <input type="number" class="leverage-input" id="leverageInput" value="5" min="1" max="10">
-
-                    <div class="container"> 
-                        <div class="street-container">
-                            <div class="street-line">
-                                <div class="selection-indicator" id="selectionIndicator"></div>
-                            </div>
-                            <div class="rhombus-container">
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="1"></div>
-                                    <span class="rhombus-value">1</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="2"></div>
-                                    <span class="rhombus-value">2</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="3"></div>
-                                    <span class="rhombus-value">3</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="4"></div>
-                                    <span class="rhombus-value">4</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="5"></div>
-                                    <span class="rhombus-value">5</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="6"></div>
-                                    <span class="rhombus-value">6</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="7"></div>
-                                    <span class="rhombus-value">7</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="8"></div>
-                                    <span class="rhombus-value">8</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="9"></div>
-                                    <span class="rhombus-value">9</span>
-                                </div>
-                                <div class="rhombus-wrapper">
-                                    <div class="rhombus" data-value="10"></div>
-                                    <span class="rhombus-value">10</span>
-                                </div>
-                            </div>
-                        </div> 
-                    </div>
-                </div>
-
-                <div class="borrow-info">
-                    <div class="borrow-text">Max borrowing at current leverage:</div>
-                    <div class="borrow-amount"><span id="borrowAmount">0 BTC or 0 USDT</span></div>
-                </div>
-
-                <div class="warning-text">
-                    Lowering leverage does not necessarily mean a decrease in borrow limit. <a href="#">Learn more</a>
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-cancel" id="cancelMarginBtn">Cancel</button>
-                    <button class="btn btn-confirm" id="confirmMarginBtn">Confirm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- jsPDF library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <script>
-        $(document).ready(function() {
-            // Theme Toggle
-            $('#themeToggle').click(function() {
-                $('body').toggleClass('light-mode');
-            });
-
-            // Buy Button
-            $('#buyBtn').click(function() {
-                $('#orderModalTitle').text('Buy BTC/USDT');
-                $('#orderModalOverlay').fadeIn(300);
-            });
-
-            // Sell Button
-            $('#sellBtn').click(function() {
-                $('#orderModalTitle').text('Sell BTC/USDT');
-                $('#orderModalOverlay').fadeIn(300);
-            });
-
-            // Close Order Modal
-            $('#closeOrderModal, #orderModalOverlay').click(function(e) {
-                if (e.target === this) {
-                    $('#orderModalOverlay').fadeOut(300);
-                }
-            });
-
-            // Open Margin Modal
-            $('#marginBtn').click(function() {
-                $('#orderModalOverlay').fadeOut(300);
-                setTimeout(function() {
-                    $('#marginModalOverlay').fadeIn(300);
-                }, 300);
-            });
-
-            // Close Margin Modal
-            $('#closeMarginModal, #marginModalOverlay').click(function(e) {
-                if (e.target === this) {
-                    $('#marginModalOverlay').fadeOut(300);
-                }
-            });
-
-            // Cancel Margin
-            $('#cancelMarginBtn').click(function() {
-                $('#marginModalOverlay').fadeOut(300);
-            });
-
-            // Confirm Margin
-            $('#confirmMarginBtn').click(function() {
-                const leverage = $('#leverageInput').val();
-                $('#currentLeverage').text(leverage);
-                $('#marginModalOverlay').fadeOut(300);
-                $('#orderModalOverlay').fadeIn(300);
-                $('.current-leverage').text(leverage + 'x');
-            });
-
-            // Order Type Toggle
-            $('.order-type-btn').click(function() {
-                $('.order-type-btn').removeClass('active');
-                $(this).addClass('active');
-            });
-
-            // Leverage Input
-            $('#leverageInput').on('input', function() {
-                let value = $(this).val();
-                if (value < 1) value = 1;
-                if (value > 10) value = 10;
-                $(this).val(value);
-                updateLeverageMarks(value);
-            });
-
-            function updateLeverageMarks(value) {
-                $('.rhombus').removeClass('active');
-                $(`.rhombus[data-value="${value}"]`).addClass('active');
-                
-                // Update borrow amount
-                $('#borrowAmount').text(`${value * 0.1} BTC or ${value * 1000} USDT`);
-                
-                // Update slider position
-                updateSliderPosition(value);
-            }
-
-            // Toggle Switch
-            $('.toggle-switch').click(function() {
-                $(this).toggleClass('active');
-            });
-
-            // Rhombus slider functionality
-            $('.rhombus').click(function() {
-                const value = parseInt($(this).attr('data-value'));
-                updateSelection(value);
-                $('#leverageInput').val(value);
-                updateLeverageMarks(value);
-            });
+        document.getElementById('downloadPdf').addEventListener('click', function() {
+            // Create PDF document
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
             
-            function updateSelection(selectedValue) {
-                // Update all rhombuses
-                $('.rhombus').each(function() {
-                    const value = parseInt($(this).attr('data-value'));
-                    
-                    if (value <= selectedValue) {
-                        $(this).addClass('active');
-                        $(this).siblings('.rhombus-value').addClass('active');
-                    } else {
-                        $(this).removeClass('active');
-                        $(this).siblings('.rhombus-value').removeClass('active');
-                    }
-                });
-                
-                // Update selection indicator
-                updateSliderPosition(selectedValue);
+            // Set font for Bengali text - using a standard font that supports Bengali
+            doc.setFont("helvetica", "normal");
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.setTextColor(46, 125, 50);
+            doc.text('সিলেট–শ্রীমঙ্গল ২ দিন ১ রাত ট্যুর গাইড', 20, 20);
+            
+            // Add subtitle
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            doc.text('ট্যুর তারিখ: ১৮–১৯ ডিসেম্বর ২০২৫', 20, 30);
+            
+            // Add line separator
+            doc.setDrawColor(46, 125, 50);
+            doc.line(20, 35, 190, 35);
+            
+            // Add content
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            
+            let yPosition = 50;
+            
+            // Day 1 content
+            doc.setFontSize(16);
+            doc.setTextColor(46, 125, 50);
+            doc.text('দিন ১: সিলেট → শাদা পাথর → পাংথুমাই → বিসনাকান্দি → শ্রীমঙ্গল', 20, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text('৬:০০–৭:০০ AM — সিলেটে পৌঁছানো', 20, yPosition);
+            yPosition += 6;
+            doc.text('ব্রেকফাস্ট: ৭০০ টাকা প্রতি জন (উচ্চ বাজেট)', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('৭:৩০–৯:৩০ AM — শাদা পাথর (Bholaganj)', 20, yPosition);
+            yPosition += 6;
+            doc.text('লোকাল ট্রান্সপোর্ট: ৪০০–৬০০ টাকা | নৌকা ভ্রমণ: ৩০০–৪০০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('১১:৩০–১২:১৫ PM — পাংথুমাই ঝর্ণা', 20, yPosition);
+            yPosition += 6;
+            doc.text('Entry: Free', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('১:০০–২:০০ PM — বিসনাকান্দি', 20, yPosition);
+            yPosition += 6;
+            doc.text('Boat Ride: ৪০০–৬০০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('২:৪৫–৩:১৫ PM — Lunch Break', 20, yPosition);
+            yPosition += 6;
+            doc.text('খরচ: ১৫০–২৫০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('৩:৩০–৫:০০ PM — Sylhet → শ্রীমঙ্গল ট্রান্সফার', 20, yPosition);
+            yPosition += 6;
+            doc.text('Bus/Car rent: ২২০–৮০০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('৭:৩০–৮:০০ PM — Nilkantha Tea Cabin (Seven Layer Tea)', 20, yPosition);
+            yPosition += 6;
+            doc.text('Tea Cost: ৭০–১০০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('৮:০০–৯:০০ PM — Dinner in Sreemangal', 20, yPosition);
+            yPosition += 6;
+            doc.text('খরচ: ১৫০–২৫০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('Night Stay in Sreemangal', 20, yPosition);
+            yPosition += 6;
+            doc.text('Hotel: ১২০০–২০০০ টাকা', 25, yPosition);
+            yPosition += 15;
+            
+            // Check if we need a new page
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 20;
             }
             
-            function updateSliderPosition(selectedValue) {
-                if (selectedValue > 0) {
-                    const firstRhombus = $('.rhombus[data-value="1"]');
-                    const selectedRhombus = $(`.rhombus[data-value="${selectedValue}"]`);
-                    
-                    const firstRect = firstRhombus[0].getBoundingClientRect();
-                    const selectedRect = selectedRhombus[0].getBoundingClientRect();
-                    
-                    const width = selectedRect.left - firstRect.left + selectedRect.width;
-                    
-                    $('#selectionIndicator').css({
-                        width: `${width}px`,
-                        opacity: '1'
-                    });
-                } else {
-                    $('#selectionIndicator').css('opacity', '0');
-                }
-            }
-
-            // Initialize
-            updateLeverageMarks(5);
+            // Day 2 content
+            doc.setFontSize(16);
+            doc.setTextColor(46, 125, 50);
+            doc.text('দিন ২: শ্রীমঙ্গল → Lawachara → Tea Garden → Madhabpur Lake → Manipuri Para', 20, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text('৮:০০–৯:৩০ AM — Lawachara National Park', 20, yPosition);
+            yPosition += 6;
+            doc.text('Entry: ৫০ টাকা | Guide (Optional): ৩০০–৫০০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('১০:৩০–১১:০০ AM — Tea Garden (Kamlapur)', 20, yPosition);
+            yPosition += 6;
+            doc.text('Entry: Free', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('১১:৩০–১২:৩০ PM — Madhabpur Lake / Baikka Beel', 20, yPosition);
+            yPosition += 6;
+            doc.text('Entry: ২৫ টাকা (Madhabpur)', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('১:০০–১:৪৫ PM — Lunch', 20, yPosition);
+            yPosition += 6;
+            doc.text('খরচ: ১৬০–২৫০ টাকা', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('২:০০–২:৪৫ PM — Manipuri Para', 20, yPosition);
+            yPosition += 6;
+            doc.text('Free entry', 25, yPosition);
+            yPosition += 6;
+            
+            doc.text('৩:৩০–৪:০০ PM — Return travel to Sylhet or home', 20, yPosition);
+            yPosition += 6;
+            doc.text('Bus/Car: ২২০–৮০০ টাকা', 25, yPosition);
+            yPosition += 15;
+            
+            // Couple Friendly Spots
+            doc.setFontSize(16);
+            doc.setTextColor(46, 125, 50);
+            doc.text('Couple–Friendly Special Spots', 20, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            const spots = [
+                "শাদা পাথর নদীর স্বচ্ছ পানি",
+                "পাংথুমাই জলপ্রপাত ব্যাকড্রপ",
+                "কামলাপুর টি গার্ডেন ভিউপয়েন্ট",
+                "মাধবপুর লেক সানসেট",
+                "লাওয়াছড়া জঙ্গলের ট্রেইল",
+                "রাতের শ্রীমঙ্গলের ৭ লেয়ার টি স্পট"
+            ];
+            
+            spots.forEach(spot => {
+                doc.text('• ' + spot, 25, yPosition);
+                yPosition += 6;
+            });
+            
+            yPosition += 10;
+            
+            // Cost Breakdown
+            doc.setFontSize(16);
+            doc.setTextColor(46, 125, 50);
+            doc.text('Detailed Cost Breakdown (Per Person)', 20, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            
+            const costs = [
+                { category: "ব্রেকফাস্ট + ২ দিনের খাবার", cost: "৪০০–৭০০" },
+                { category: "সিলেট লোকাল ট্রান্সপোর্ট", cost: "৪০০–৬০০" },
+                { category: "নৌকা রাইড (২ বার)", cost: "৭০০–৯০০" },
+                { category: "সিলেট → শ্রীমঙ্গল বাস", cost: "২২০–২৫০" },
+                { category: "শ্রীমঙ্গলের লোকাল ট্রান্সপোর্ট", cost: "২০০–৩০০" },
+                { category: "হোটেল (১ রাত)", cost: "১২০০–২০০০" },
+                { category: "এন্ট্রি ফি", cost: "১৫০–২৫০" },
+                { category: "মোট", cost: "৩২০০–৪৫০০" }
+            ];
+            
+            costs.forEach(item => {
+                doc.text(item.category + ": " + item.cost + " টাকা", 25, yPosition);
+                yPosition += 6;
+            });
+            
+            // Save the PDF
+            doc.save('সিলেট-শ্রীমঙ্গল-ট্যুর-গাইড.pdf');
+            
+            // Show success message
+            alert('ট্যুর গাইড PDF সফলভাবে ডাউনলোড হয়েছে!');
         });
     </script>
 </body>

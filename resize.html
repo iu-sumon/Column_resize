@@ -1,633 +1,417 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Withdraw Approval System</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* Existing styles remain the same */
-    .withdraw-container {
-      max-width: 1800px;
-      margin: 0 auto;
-      background: #1a1a2e;
-      border-radius: 16px;
-      overflow: hidden;
-      margin-top: 30px;
-    }
-
-    .withdraw-main-content {
-      padding: 25px;
-    }
-
-    .withdraw-table-wrapper {
-      overflow-x: auto;
-      border-radius: 12px;
-      border: 1px solid #333;
-      background: #1a1a2e;
-    }
-
-    .withdraw-table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #1a1a2e;
-      min-width: 800px;
-    }
-
-    .withdraw-thead {
-      background: #16213e;
-      border-bottom: 2px solid #333;
-    }
-
-    .withdraw-th {
-      padding: 10px;
-      text-align: left;
-      font-weight: 600;
-      color: #fff;
-      font-size: 13px;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-
-    .withdraw-td {
-      padding: 7px;
-      font-size: 14px;
-      color: #ccc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .withdraw-tbody tr {
-      transition: all 0.3s ease;
-      background: #1a1a2e;
-      border-bottom: 1px solid #333;
-    }
-
-    .withdraw-tbody tr:hover {
-      background: #252541;
-    }
-
-    .withdraw-amount {
-      font-weight: 600;
-      color: #667eea;
-    }
-
-    /* Updated Action Buttons with Font Awesome Icons */
-    .withdraw-action-btn {
-      padding: 6px 12px;
-      margin: 0 3px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .withdraw-action-btn i {
-      font-size: 12px;
-    }
-
-    .withdraw-edit {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .withdraw-edit:hover {
-      background-color: #218838;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-    }
-
-    .withdraw-delete {
-      background-color: #dc3545;
-      color: white;
-    }
-
-    .withdraw-delete:hover {
-      background-color: #c82333;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
-    }
-
-    /* Status Colors */
-    .status-pending {
-      color: #ffc107;
-      font-weight: 600;
-    }
-
-    .status-approved {
-      color: #28a745;
-      font-weight: 600;
-    }
-
-    .status-rejected {
-      color: #dc3545;
-      font-weight: 600;
-    }
-
-    /* Modal Overlay */
-    .withdraw-modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(4px);
-    }
-
-    .withdraw-modal-overlay.active {
-      display: flex;
-    }
-
-    /* Modal Container */
-    .withdraw-modal-container {
-      background: #1a1a2e;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-      animation: modalSlideIn 0.3s ease;
-      border: 2px solid #667eea;
-    }
-
-    @keyframes modalSlideIn {
-      from {
-        transform: translateY(-50px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    /* Modal Header */
-    .withdraw-modal-header {
-      padding: 20px 24px;
-      border-bottom: 2px solid #333;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .withdraw-modal-header h3 {
-      margin: 0;
-      color: white;
-      font-size: 18px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .withdraw-modal-close {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 5px;
-      transition: all 0.3s ease;
-    }
-
-    .withdraw-modal-close:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: rotate(90deg);
-    }
-
-    /* Modal Body */
-    .withdraw-modal-body {
-      padding: 24px;
-    }
-
-    .withdraw-form-group {
-      margin-bottom: 20px;
-    }
-
-    .withdraw-form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-
-    .withdraw-form-group label .required {
-      color: #ff6b6b;
-      margin-left: 4px;
-    }
-
-    .withdraw-form-group select,
-    .withdraw-form-group textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 2px solid #333;
-      border-radius: 8px;
-      font-size: 14px;
-      background: #16213e;
-      color: #fff;
-      transition: all 0.3s ease;
-      font-family: inherit;
-    }
-
-    .withdraw-form-group select:focus,
-    .withdraw-form-group textarea:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .withdraw-form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    /* Status Select Styling */
-    .withdraw-form-group select {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 35px;
-    }
-
-    .withdraw-form-group select option {
-      background: #16213e;
-      color: #fff;
-      padding: 10px;
-    }
-
-    /* Modal Footer */
-    .withdraw-modal-footer {
-      padding: 20px 24px;
-      border-top: 2px solid #333;
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      background: #16213e;
-    }
-
-    .withdraw-btn {
-      padding: 10px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .withdraw-btn-cancel {
-      background: #6c757d;
-      color: white;
-    }
-
-    .withdraw-btn-cancel:hover {
-      background: #5a6268;
-      transform: translateY(-2px);
-    }
-
-    .withdraw-btn-submit {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .withdraw-btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-    }
-
-    .withdraw-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    /* Client Info Display */
-    .withdraw-client-info {
-      background: #16213e;
-      border: 2px solid #667eea;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-
-    .withdraw-client-info-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-
-    .withdraw-client-info-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .withdraw-client-info-label {
-      color: #999;
-      font-weight: 500;
-    }
-
-    .withdraw-client-info-value {
-      color: #fff;
-      font-weight: 600;
-    }
-  </style>
-</head>
-<body style="background: #0f0f1e; color: #fff; font-family: Arial, sans-serif; padding: 20px;">
-
-  <div class="withdraw-container">
-    <div class="withdraw-main-content">
-      <h2 style="margin-bottom: 20px;">Withdrawal Requests</h2>
-      
-      <div class="withdraw-table-wrapper">
-        <table class="withdraw-table">
-          <thead class="withdraw-thead">
-            <tr>
-              <th class="withdraw-th">#</th>
-              <th class="withdraw-th">Client Code</th>
-              <th class="withdraw-th">Name</th>
-              <th class="withdraw-th">Date & Time</th>
-              <th class="withdraw-th">Amount</th>
-              <th class="withdraw-th">User</th>
-              <th class="withdraw-th">Status</th>
-              <th class="withdraw-th">Action</th>
-            </tr>
-          </thead>
-          <tbody class="withdraw-tbody" id="withdrawTableBody">
-            <!-- Sample data for demonstration -->
-            <tr>
-              <td class="withdraw-td">1</td>
-              <td class="withdraw-td">CLI001</td>
-              <td class="withdraw-td">John Doe</td>
-              <td class="withdraw-td">03-11-2025 10:30 AM</td>
-              <td class="withdraw-td withdraw-amount">50,000.00</td>
-              <td class="withdraw-td">admin</td>
-              <td class="withdraw-td status-pending">pending</td>
-              <td class="withdraw-td">
-                <button class="withdraw-action-btn withdraw-edit" onclick="openApprovalModal(0, 'approved')">
-                  <i class="fas fa-check"></i> Approve
-                </button>
-                <button class="withdraw-action-btn withdraw-delete" onclick="openApprovalModal(0, 'rejected')">
-                  <i class="fas fa-times"></i> Reject
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <td class="withdraw-td">2</td>
-              <td class="withdraw-td">CLI002</td>
-              <td class="withdraw-td">Jane Smith</td>
-              <td class="withdraw-td">03-11-2025 11:45 AM</td>
-              <td class="withdraw-td withdraw-amount">75,000.00</td>
-              <td class="withdraw-td">admin</td>
-              <td class="withdraw-td status-pending">pending</td>
-              <td class="withdraw-td">
-                <button class="withdraw-action-btn withdraw-edit" onclick="openApprovalModal(1, 'approved')">
-                  <i class="fas fa-check"></i> Approve
-                </button>
-                <button class="withdraw-action-btn withdraw-delete" onclick="openApprovalModal(1, 'rejected')">
-                  <i class="fas fa-times"></i> Reject
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Approval/Rejection Modal -->
-  <div class="withdraw-modal-overlay" id="withdrawApprovalModal">
-    <div class="withdraw-modal-container">
-      <div class="withdraw-modal-header">
-        <h3>
-          <i class="fas fa-file-invoice-dollar"></i>
-          <span id="modalTitle">Withdrawal Action</span>
-        </h3>
-        <button class="withdraw-modal-close" onclick="closeApprovalModal()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="withdraw-modal-body">
-        <!-- Client Information -->
-        <div class="withdraw-client-info">
-          <div class="withdraw-client-info-row">
-            <span class="withdraw-client-info-label">Client Code:</span>
-            <span class="withdraw-client-info-value" id="modalClientCode">-</span>
-          </div>
-          <div class="withdraw-client-info-row">
-            <span class="withdraw-client-info-label">Client Name:</span>
-            <span class="withdraw-client-info-value" id="modalClientName">-</span>
-          </div>
-          <div class="withdraw-client-info-row">
-            <span class="withdraw-client-info-label">Amount:</span>
-            <span class="withdraw-client-info-value" id="modalAmount">-</span>
-          </div>
-        </div>
-
-        <!-- Status Selection -->
-        <div class="withdraw-form-group">
-          <label>
-            Status <span class="required">*</span>
-          </label>
-          <select id="modalStatus">
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-
-        <!-- Remarks Input -->
-        <div class="withdraw-form-group">
-          <label>
-            Remarks <span class="required">*</span>
-          </label>
-          <textarea 
-            id="modalRemarks" 
-            placeholder="Enter remarks for this action..."
-            maxlength="200"
-          ></textarea>
-        </div>
-      </div>
-
-      <div class="withdraw-modal-footer">
-        <button class="withdraw-btn withdraw-btn-cancel" onclick="closeApprovalModal()">
-          <i class="fas fa-times"></i> Cancel
-        </button>
-        <button class="withdraw-btn withdraw-btn-submit" id="modalSubmitBtn" onclick="submitApprovalAction()">
-          <i class="fas fa-check"></i> Submit
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    
-
-    // Modal state
-    let currentRequestIndex = null;
-    let currentActionType = null;
-
-    // Open Modal Function
-    function openApprovalModal(index, actionType) {
-      const request = withdrawFilteredData[index];
-      currentRequestIndex = index;
-      currentActionType = actionType;
-
-      // Update modal title and icon
-      const modalTitle = document.getElementById('modalTitle');
-      if (actionType === 'approved') {
-        modalTitle.innerHTML = '<i class="fas fa-check-circle"></i> Approve Withdrawal';
-      } else {
-        modalTitle.innerHTML = '<i class="fas fa-times-circle"></i> Reject Withdrawal';
-      }
-
-      // Populate client information
-      document.getElementById('modalClientCode').textContent = request.withdrawCode;
-      document.getElementById('modalClientName').textContent = request.withdrawName;
-      document.getElementById('modalAmount').textContent = request.withdrawAmount;
-
-      // Set status dropdown
-      document.getElementById('modalStatus').value = actionType;
-
-      // Set default remarks based on action type
-      const defaultRemarks = actionType === 'approved' 
-        ? 'Withdrawal approved by admin' 
-        : 'Withdrawal rejected by admin';
-      document.getElementById('modalRemarks').value = defaultRemarks;
-
-      // Show modal
-      document.getElementById('withdrawApprovalModal').classList.add('active');
-    }
-
-    // Close Modal Function
-    function closeApprovalModal() {
-      document.getElementById('withdrawApprovalModal').classList.remove('active');
-      currentRequestIndex = null;
-      currentActionType = null;
-      
-      // Reset form
-      document.getElementById('modalStatus').value = 'approved';
-      document.getElementById('modalRemarks').value = '';
-    }
-
-    // Submit Action Function
-    function submitApprovalAction() {
-      const status = document.getElementById('modalStatus').value;
-      const remarks = document.getElementById('modalRemarks').value.trim();
-
-      // Validate remarks
-      if (!remarks) {
-        alert('Please enter remarks for this action.');
-        return;
-      }
-
-      if (currentRequestIndex === null) {
-        alert('Invalid request. Please try again.');
-        return;
-      }
-
-      // Disable submit button
-      const submitBtn = document.getElementById('modalSubmitBtn');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-      // Call the actual handler
-      handleWithdrawAction(currentRequestIndex, status, remarks);
-    }
-
-    // Updated handleWithdrawAction to accept remarks parameter
-    function handleWithdrawAction(index, actionType, remarks) {
-      const request = withdrawFilteredData[index];
-      
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Processing withdrawal action:', {
-          clientCode: request.withdrawCode,
-          amount: request.withdrawAmount,
-          status: actionType,
-          remarks: remarks
-        });
-
-        // Update request status locally
-        request.status = actionType;
-        request.remarks = remarks;
-
-        // Update the table row
-        const row = document.querySelectorAll('.withdraw-tbody tr')[index];
-        const statusCell = row.querySelector('.withdraw-td:nth-child(7)');
-        const actionCell = row.querySelector('.withdraw-td:nth-child(8)');
-
-        statusCell.className = `withdraw-td status-${actionType}`;
-        statusCell.textContent = actionType;
-
-        if (actionType === 'approved') {
-          actionCell.innerHTML = '<span style="color: #28a745; font-weight: 600;"><i class="fas fa-check-circle"></i> Approved</span>';
-        } else {
-          actionCell.innerHTML = '<span style="color: #dc3545; font-weight: 600;"><i class="fas fa-times-circle"></i> Rejected</span>';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সিলেট–শ্রীমঙ্গল ট্যুর গাইড PDF ডাউনলোড</title>
+    <!-- বাংলা ফন্ট সাপোর্ট -->
+    <link href="https://fonts.maateen.me/kalpurush/font.css" rel="stylesheet">
+    <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kalpurush', 'SolaimanLipi', 'Segoe UI', Arial, sans-serif;
         }
-
-        // Show success message
-        const message = actionType === 'approved' 
-          ? 'Withdrawal request approved successfully!' 
-          : 'Withdrawal request rejected successfully!';
         
-        alert(message);
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            direction: ltr;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            padding: 30px 25px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 25px;
+        }
+        
+        .tour-highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .highlight-card {
+            background: #f1f8e9;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .highlight-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .highlight-card i {
+            font-size: 24px;
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+        
+        .highlight-card h3 {
+            font-size: 14px;
+            color: #1b5e20;
+            margin-bottom: 5px;
+        }
+        
+        .highlight-card p {
+            font-size: 12px;
+            color: #388e3c;
+        }
+        
+        .details {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .details h2 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #4caf50;
+            padding-bottom: 8px;
+        }
+        
+        .details ul {
+            list-style-type: none;
+            padding-left: 10px;
+        }
+        
+        .details li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .details li:before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .download-section {
+            text-align: center;
+            padding: 20px;
+            background: #f1f8e9;
+            border-radius: 10px;
+            margin: 25px 0;
+        }
+        
+        .download-btn {
+            background: linear-gradient(to right, #2e7d32, #4caf50);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.4);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-family: 'Kalpurush', 'SolaimanLipi', Arial, sans-serif;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.6);
+        }
+        
+        .download-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .note {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .tour-highlights {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .download-btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>সিলেট–শ্রীমঙ্গল ২ দিন ১ রাত ট্যুর গাইড</h1>
+            <p class="subtitle">ট্যুর তারিখ: ১৮–১৯ ডিসেম্বর ২০২৫</p>
+        </header>
+        
+        <div class="content">
+            <div class="tour-highlights">
+                <div class="highlight-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h3>১০+ আকর্ষণীয় স্থান</h3>
+                    <p>শাদা পাথর, পাংথুমাই, বিসনাকান্দি, লাওয়াছড়া</p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h3>বিস্তারিত খরচ</h3>
+                    <p>প্রতি জন ৩২০০-৪৫০০ টাকা</p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fas fa-heart"></i>
+                    <h3>কাপল ফ্রেন্ডলি স্পট</h3>
+                    <p>৬টি রোমান্টিক স্থান</p>
+                </div>
+                <div class="highlight-card">
+                    <i class="fas fa-map"></i>
+                    <h3>গুগল ম্যাপস লিংক</h3>
+                    <p>সকল স্থানের লোকেশন</p>
+                </div>
+            </div>
+            
+            <div class="details">
+                <h2>ট্যুর গাইডে যা যা পাবেন:</h2>
+                <ul>
+                    <li>দিনভিত্তিক বিস্তারিত সময়সূচী</li>
+                    <li>প্রতিটি স্থানের এন্ট্রি ফি ও খরচ</li>
+                    <li>কাপল ফ্রেন্ডলি বিশেষ স্থানসমূহ</li>
+                    <li>গুগল ম্যাপস সহ প্রতিটি স্থানের লোকেশন</li>
+                    <li>খাবারের জন্য বাজেট ও সুপারিশ</li>
+                    <li>স্থানীয় পরিবহনের খরচ ও অপশন</li>
+                    <li>হোটেল বুকিং ও থাকার খরচ</li>
+                </ul>
+            </div>
+            
+            <div class="note">
+                <p><strong>দ্রষ্টব্য:</strong> এই ট্যুর গাইডটি বিশেষভাবে কাপলদের জন্য ডিজাইন করা হয়েছে, তবে পরিবার ও বন্ধুদের জন্যও উপযোগী।</p>
+            </div>
+            
+            <div class="download-section">
+                <button class="download-btn" id="downloadPdf">
+                    <i class="fas fa-download"></i> PDF গাইড ডাউনলোড করুন
+                </button>
+                <p style="margin-top: 15px; font-size: 14px; color: #666;">ডাউনলোড বাটনে ক্লিক করলে সম্পূর্ণ ট্যুর গাইড PDF ফরম্যাটে ডাউনলোড হবে</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© ২০২৫ সিলেট–শ্রীমঙ্গল ট্যুর গাইড | সকল অধিকার সংরক্ষিত</p>
+        </footer>
+    </div>
 
-        // Close modal
-        closeApprovalModal();
-
-        // Re-enable submit button
-        const submitBtn = document.getElementById('modalSubmitBtn');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Submit';
-      }, 1000);
-    }
-
-    // Close modal on overlay click
-    document.getElementById('withdrawApprovalModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeApprovalModal();
-      }
-    });
-
-    // Close modal on Escape key
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeApprovalModal();
-      }
-    });
-
-    // Update remarks when status changes
-    document.getElementById('modalStatus').addEventListener('change', function(e) {
-      const remarksField = document.getElementById('modalRemarks');
-      if (e.target.value === 'approved') {
-        remarksField.value = 'Withdrawal approved by admin';
-      } else {
-        remarksField.value = 'Withdrawal rejected by admin';
-      }
-    });
-  </script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script>
+        document.getElementById('downloadPdf').addEventListener('click', async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> প্রস্তুত হচ্ছে...';
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                
+                // Create a temporary div with the tour content
+                const tempDiv = document.createElement('div');
+                tempDiv.style.cssText = 'position: absolute; left: -9999px; width: 800px; background: white; padding: 40px; font-family: Kalpurush, SolaimanLipi, Arial;';
+                tempDiv.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #2e7d32; font-size: 28px; margin-bottom: 10px;">সিলেট–শ্রীমঙ্গল ২ দিন ১ রাত ট্যুর গাইড</h1>
+                        <p style="color: #666; font-size: 16px;">ট্যুর তারিখ: ১৮–১৯ ডিসেম্বর ২০২৫</p>
+                        <hr style="border: 1px solid #4caf50; margin: 15px 0;">
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2e7d32; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #4caf50; padding-bottom: 8px;">দিন ১: সিলেট → শাদা পাথর → পাংথুমাই → বিসনাকান্দি → শ্রীমঙ্গল</h2>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            <p><strong>৬:০০–৭:০০ AM</strong> — সিলেটে পৌঁছানো<br>
+                            &nbsp;&nbsp;&nbsp;ব্রেকফাস্ট: ৭০০ টাকা প্রতি জন (উচ্চ বাজেট)</p>
+                            
+                            <p><strong>৭:৩০–৯:৩০ AM</strong> — শাদা পাথর (Bholaganj)<br>
+                            &nbsp;&nbsp;&nbsp;লোকাল ট্রান্সপোর্ট: ৪০০–৬০০ টাকা | নৌকা ভ্রমণ: ৩০০–৪০০ টাকা</p>
+                            
+                            <p><strong>১১:৩০–১২:১৫ PM</strong> — পাংথুমাই ঝর্ণা<br>
+                            &nbsp;&nbsp;&nbsp;Entry: Free</p>
+                            
+                            <p><strong>১:০০–২:০০ PM</strong> — বিসনাকান্দি<br>
+                            &nbsp;&nbsp;&nbsp;Boat Ride: ৪০০–৬০০ টাকা</p>
+                            
+                            <p><strong>২:৪৫–৩:১৫ PM</strong> — Lunch Break<br>
+                            &nbsp;&nbsp;&nbsp;খরচ: ১৫০–২৫০ টাকা</p>
+                            
+                            <p><strong>৩:৩০–৫:০০ PM</strong> — Sylhet → শ্রীমঙ্গল ট্রান্সফার<br>
+                            &nbsp;&nbsp;&nbsp;Bus/Car rent: ২২০–৮০০ টাকা</p>
+                            
+                            <p><strong>৭:৩০–৮:০০ PM</strong> — Nilkantha Tea Cabin (Seven Layer Tea)<br>
+                            &nbsp;&nbsp;&nbsp;Tea Cost: ৭০–১০০ টাকা</p>
+                            
+                            <p><strong>৮:০০–৯:০০ PM</strong> — Dinner in Sreemangal<br>
+                            &nbsp;&nbsp;&nbsp;খরচ: ১৫০–২৫০ টাকা</p>
+                            
+                            <p><strong>Night Stay</strong> in Sreemangal<br>
+                            &nbsp;&nbsp;&nbsp;Hotel: ১২০০–২০০০ টাকা</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(tempDiv);
+                
+                // Convert to canvas
+                const canvas1 = await html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const imgData1 = canvas1.toDataURL('image/png');
+                const imgWidth = 190;
+                const imgHeight = (canvas1.height * imgWidth) / canvas1.width;
+                
+                doc.addImage(imgData1, 'PNG', 10, 10, imgWidth, imgHeight);
+                
+                // Page 2
+                doc.addPage();
+                tempDiv.innerHTML = `
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2e7d32; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #4caf50; padding-bottom: 8px;">দিন ২: শ্রীমঙ্গল → Lawachara → Tea Garden → Madhabpur Lake</h2>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            <p><strong>৮:০০–৯:৩০ AM</strong> — Lawachara National Park<br>
+                            &nbsp;&nbsp;&nbsp;Entry: ৫০ টাকা | Guide (Optional): ৩০০–৫০০ টাকা</p>
+                            
+                            <p><strong>১০:৩০–১১:০০ AM</strong> — Tea Garden (Kamlapur)<br>
+                            &nbsp;&nbsp;&nbsp;Entry: Free</p>
+                            
+                            <p><strong>১১:৩০–১২:৩০ PM</strong> — Madhabpur Lake / Baikka Beel<br>
+                            &nbsp;&nbsp;&nbsp;Entry: ২৫ টাকা (Madhabpur)</p>
+                            
+                            <p><strong>১:০০–১:৪৫ PM</strong> — Lunch<br>
+                            &nbsp;&nbsp;&nbsp;খরচ: ১৬০–২৫০ টাকা</p>
+                            
+                            <p><strong>২:০০–২:৪৫ PM</strong> — Manipuri Para<br>
+                            &nbsp;&nbsp;&nbsp;Free entry</p>
+                            
+                            <p><strong>৩:৩০–৪:০০ PM</strong> — Return travel to Sylhet<br>
+                            &nbsp;&nbsp;&nbsp;Bus/Car: ২২০–৮০০ টাকা</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2e7d32; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #4caf50; padding-bottom: 8px;">Couple–Friendly Special Spots</h2>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            <p>✓ শাদা পাথর নদীর স্বচ্ছ পানি</p>
+                            <p>✓ পাংথুমাই জলপ্রপাত ব্যাকড্রপ</p>
+                            <p>✓ কামলাপুর টি গার্ডেন ভিউপয়েন্ট</p>
+                            <p>✓ মাধবপুর লেক সানসেট</p>
+                            <p>✓ লাওয়াছড়া জঙ্গলের ট্রেইল</p>
+                            <p>✓ রাতের শ্রীমঙ্গলের ৭ লেয়ার টি স্পট</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h2 style="color: #2e7d32; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #4caf50; padding-bottom: 8px;">Detailed Cost Breakdown (Per Person)</h2>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            <p>ব্রেকফাস্ট + ২ দিনের খাবার: ৪০০–৭০০ টাকা</p>
+                            <p>সিলেট লোকাল ট্রান্সপোর্ট: ৪০০–৬০০ টাকা</p>
+                            <p>নৌকা রাইড (২ বার): ৭০০–৯০০ টাকা</p>
+                            <p>সিলেট → শ্রীমঙ্গল বাস: ২২০–২৫০ টাকা</p>
+                            <p>শ্রীমঙ্গলের লোকাল ট্রান্সপোর্ট: ২০০–৩০০ টাকা</p>
+                            <p>হোটেল (১ রাত): ১২০০–২০০০ টাকা</p>
+                            <p>এন্ট্রি ফি: ১৫০–২৫০ টাকা</p>
+                            <p><strong style="color: #2e7d32;">মোট: ৩২০০–৪৫০০ টাকা</strong></p>
+                        </div>
+                    </div>
+                `;
+                
+                const canvas2 = await html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const imgData2 = canvas2.toDataURL('image/png');
+                const imgHeight2 = (canvas2.height * imgWidth) / canvas2.width;
+                
+                doc.addImage(imgData2, 'PNG', 10, 10, imgWidth, imgHeight2);
+                
+                // Clean up
+                document.body.removeChild(tempDiv);
+                
+                // Save PDF
+                doc.save('সিলেট-শ্রীমঙ্গল-ট্যুর-গাইড.pdf');
+                
+                alert('ট্যুর গাইড PDF সফলভাবে ডাউনলোড হয়েছে!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('PDF তৈরি করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-download"></i> PDF গাইড ডাউনলোড করুন';
+            }
+        });
+    </script>
 </body>
 </html>

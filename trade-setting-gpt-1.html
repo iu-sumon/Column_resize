@@ -1,660 +1,575 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Interface</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>Sylhet-Sreemangal Travel Plan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        :root {
-            --mrcnt-mrg-bg-primary: #0d1117;
-            --mrcnt-mrg-bg-secondary: #161b22;
-            --mrcnt-mrg-bg-tertiary: #21262d;
-            --mrcnt-mrg-text-primary: #f0f6fc;
-            --mrcnt-mrg-text-secondary: #8b949e;
-            --mrcnt-mrg-accent-yellow: #f0b90b;
-            --mrcnt-mrg-accent-green: #0ecb81;
-            --mrcnt-mrg-accent-red: #f6465d;
-            --mrcnt-mrg-border-color: #30363d; 
-            --mrcnt-mrg-rhombus-normal-bg:#000000;
-        }
-
-        body.mrcnt-mrg-light-mode {
-            --mrcnt-mrg-bg-primary: #f8fafc;
-            --mrcnt-mrg-bg-secondary: #ffffff;
-            --mrcnt-mrg-bg-tertiary: #f1f5f9;
-            --mrcnt-mrg-text-primary: #1e293b;
-            --mrcnt-mrg-text-secondary: #64748b;
-            --mrcnt-mrg-accent-yellow: #f59e0b;
-            --mrcnt-mrg-accent-green: #10b981;
-            --mrcnt-mrg-accent-red: #ef4444;
-            --mrcnt-mrg-border-color: #e2e8f0;
-            --mrcnt-mrg-rhombus-normal-bg:#ffffff;
-        }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: var(--mrcnt-mrg-bg-primary);
-            color: var(--mrcnt-mrg-text-primary);
-            min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
-        }
-
-        .mrcnt-mrg-header {
-            background: var(--mrcnt-mrg-bg-secondary);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--mrcnt-mrg-border-color);
-        }
-
-        .mrcnt-mrg-header-left {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .mrcnt-mrg-logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--mrcnt-mrg-accent-yellow);
-        }
-
-        .mrcnt-mrg-trade-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .mrcnt-mrg-btn {
-            padding: 12px 32px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .mrcnt-mrg-btn-buy {
-            background: var(--mrcnt-mrg-accent-green);
-            color: white;
-        }
-
-        .mrcnt-mrg-btn-buy:hover {
-            background: #0eb876;
-            transform: translateY(-1px);
-        }
-
-        .mrcnt-mrg-btn-sell {
-            background: var(--mrcnt-mrg-accent-red);
-            color: white;
-        }
-
-        .mrcnt-mrg-btn-sell:hover {
-            background: #e5415a;
-            transform: translateY(-1px);
-        }
-
-        .mrcnt-mrg-theme-toggle {
-            background: var(--mrcnt-mrg-bg-tertiary);
-            border: 1px solid var(--mrcnt-mrg-border-color);
-            color: var(--mrcnt-mrg-text-primary);
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .mrcnt-mrg-theme-toggle:hover {
-            background: var(--mrcnt-mrg-border-color);
-        }
-
-        .mrcnt-mrg-modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            animation: mrcnt-mrg-fadeIn 0.3s;
-        }
-
-        @keyframes mrcnt-mrg-fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes mrcnt-mrg-slideUp {
-            from { 
-                opacity: 0;
-                transform: translate(-50%, -45%);
-            }
-            to { 
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
-        }
-
-        .mrcnt-mrg-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--mrcnt-mrg-bg-secondary);
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            z-index: 1001;
-            animation: mrcnt-mrg-slideUp 0.3s;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        .mrcnt-mrg-modal-header {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--mrcnt-mrg-border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .mrcnt-mrg-modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .mrcnt-mrg-modal-close {
-            background: none;
-            border: none;
-            color: var(--mrcnt-mrg-text-secondary);
-            font-size: 28px;
-            cursor: pointer;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-
-        .mrcnt-mrg-modal-close:hover {
-            background: var(--mrcnt-mrg-bg-tertiary);
-            color: var(--mrcnt-mrg-text-primary);
-        }
-
-        .mrcnt-mrg-modal-body {
-            padding: 14px;
-        }
-
-        .mrcnt-mrg-order-type {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .mrcnt-mrg-order-type-btn {
-            flex: 1;
-            padding: 12px;
-            background: var(--mrcnt-mrg-bg-tertiary);
-            border: 1px solid var(--mrcnt-mrg-border-color);
-            color: var(--mrcnt-mrg-text-secondary);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .mrcnt-mrg-order-type-btn.mrcnt-mrg-active {
-            background: var(--mrcnt-mrg-accent-yellow);
-            color: #000;
-            border-color: var(--mrcnt-mrg-accent-yellow);
-        }
-
-        .mrcnt-mrg-margin-btn {
-            background: var(--mrcnt-mrg-bg-tertiary);
-            border: 1px solid var(--mrcnt-mrg-border-color);
-            color: var(--mrcnt-mrg-text-primary);
-            padding: 14px;
-            border-radius: 6px;
-            width: 100%;
-            cursor: pointer;
-            font-size: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .mrcnt-mrg-margin-btn:hover {
-            border-color: var(--mrcnt-mrg-accent-yellow);
-        } 
-
-        .mrcnt-mrg-leverage-control {
-            margin-bottom: 20px;
-        }
-
-        .mrcnt-mrg-leverage-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: var(--mrcnt-mrg-text-secondary);
-        }
-
-        .mrcnt-mrg-current-leverage {
-            color: var(--mrcnt-mrg-text-primary);
-            font-weight: 600;
-        }
-
-        .mrcnt-mrg-leverage-input {
-            width: 100%;
-            padding: 12px;
-            background: var(--mrcnt-mrg-bg-tertiary);
-            border: 1px solid var(--mrcnt-mrg-border-color);
-            border-radius: 6px;
-            color: var(--mrcnt-mrg-text-primary);
-            font-size: 15px;
-            margin-bottom: 16px;
-        }
-
-        .mrcnt-mrg-leverage-input:focus {
-            outline: none;
-            border-color: var(--mrcnt-mrg-accent-yellow);
-        }
-             
-        .mrcnt-mrg-container {
-            width: 100%;   
-            background: var(--mrcnt-mrg-bg-tertiary);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        } 
-        
-        .mrcnt-mrg-street-container {
-            position: relative;
-            margin: 50px 0;
-            padding: 0 20px;
+            font-family: 'Noto Sans Bengali', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
         }
         
-        .mrcnt-mrg-street-line {
-            height: 1px;
-            background: linear-gradient(90deg, #333 0%, #555 50%, #333 100%);
-            border-radius: 2px;
-            position: relative;
-        }
-        
-        .mrcnt-mrg-street-line::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px; 
-            transform: translateY(-50%);
-        }
-        
-        .mrcnt-mrg-rhombus-container {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            transform: translateY(-50%);
-            display: flex;
-            justify-content: space-between;
-            padding: 0 10px;
-        }
-        
-        .mrcnt-mrg-rhombus-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-        
-        .mrcnt-mrg-rhombus {
-            width: 10px;
-            height: 10px;
-            background: var(--mrcnt-mrg-rhombus-normal-bg);
-            transform: rotate(45deg);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s ease;
-            border: 1px solid #666;
-            margin-bottom: 8px;
-            top: 14px;
-        }
-     
-
-        .mrcnt-mrg-rhombus:hover { 
-            background: #555;
-        }
-        
-        .mrcnt-mrg-rhombus.mrcnt-mrg-active {
-            background: var(--mrcnt-mrg-accent-yellow);
-            border-color: var(--mrcnt-mrg-accent-yellow);  
-        }
-        
-        .mrcnt-mrg-rhombus-value {
-            color: var(--mrcnt-mrg-text-secondary);
-            font-weight: 600;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            position: relative;
-            top: 15px;
-            transform: none;
-            transition: color 0.3s ease;
-        }
-        
-        .mrcnt-mrg-rhombus-value.mrcnt-mrg-active {
-            color: var(--mrcnt-mrg-text-primary); 
-        }
-        
-        .mrcnt-mrg-selection-indicator {
-            position: absolute;
-            top: 50%;
-            left: -6px;
-            height: 1px;
-            background: var(--mrcnt-mrg-accent-yellow);  
-            transform: translateY(-50%);
-            transition: all 0.4s ease;
-            z-index: 1;
-            opacity: 0;
-        }  
-        .mrcnt-mrg-modal-footer {
-            display: flex;
-            gap: 12px;
-        }
-
-        .mrcnt-mrg-btn-cancel {
-            flex: 1;
-            background: var(--mrcnt-mrg-bg-tertiary);
-            color: var(--mrcnt-mrg-text-primary);
-            border: 1px solid var(--mrcnt-mrg-border-color);
-        }
-
-        .mrcnt-mrg-btn-cancel:hover {
-            background: var(--mrcnt-mrg-border-color);
-        }
-
-        .mrcnt-mrg-btn-confirm {
-            flex: 1;
-            background: var(--mrcnt-mrg-accent-yellow);
-            color: #000;
-            font-weight: 600;
-        }
-
-        .mrcnt-mrg-btn-confirm:hover {
-            background: #f5c542;
-        }
-
-        /* Toggle Switch */
-        .mrcnt-mrg-toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            background: var(--mrcnt-mrg-bg-tertiary);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s;
-            border: 1px solid var(--mrcnt-mrg-border-color);
-        }
-
-        .mrcnt-mrg-toggle-switch.mrcnt-mrg-active {
-            background: var(--mrcnt-mrg-accent-yellow);
-        }
-
-        .mrcnt-mrg-toggle-slider {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
             background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            overflow: hidden;
         }
-
-        .mrcnt-mrg-toggle-switch.mrcnt-mrg-active .mrcnt-mrg-toggle-slider {
-            transform: translateX(22px);
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-top: 8px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .day-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: 25px -30px 20px -30px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .location {
+            margin-bottom: 25px;
+            padding: 18px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+        }
+        
+        .location-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .time {
+            color: #e53e3e;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        .details {
+            margin-top: 8px;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+        
+        .details div {
+            margin: 4px 0;
+        }
+        
+        .cost {
+            color: #38a169;
+            font-weight: 600;
+        }
+        
+        .budget-section {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 25px;
+            margin: 25px -30px;
+            border-radius: 8px;
+        }
+        
+        .budget-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .budget-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .budget-table th {
+            background: #4a5568;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .budget-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .budget-table tr:last-child td {
+            border-bottom: none;
+            font-weight: 700;
+            background: #edf2f7;
+            font-size: 16px;
+        }
+        
+        .route-map {
+            background: #edf2f7;
+            padding: 20px;
+            margin: 20px -30px -30px -30px;
+            border-top: 3px solid #667eea;
+        }
+        
+        .route-map h3 {
+            font-size: 20px;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .route-day {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        .route-day strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .print-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .print-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .print-btn {
+                display: none;
+            }
+            
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            
+            .day-header,
+            .budget-section {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            
+            .route-map {
+                margin-left: 0;
+                margin-right: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="mrcnt-mrg-header">
-        <div class="mrcnt-mrg-header-left">
-            <div class="mrcnt-mrg-logo">⚡ TradeX</div>
-            <div class="mrcnt-mrg-trade-buttons">
-                <button class="mrcnt-mrg-btn mrcnt-mrg-btn-buy" id="mrcnt-mrg-buyBtn">Buy</button>
-                <button class="mrcnt-mrg-btn mrcnt-mrg-btn-sell" id="mrcnt-mrg-sellBtn">Sell</button>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 Sylhet–Sreemangal Travel Plan</h1>
+            <div class="subtitle">
+                📅 19–20 December | 2 Days 1 Night<br>
+                👤 Solo / Couple Friendly | Maximum Coverage
             </div>
         </div>
-        <button class="mrcnt-mrg-theme-toggle" id="mrcnt-mrg-themeToggle">🌓 Theme</button>
-    </div>
-
-    <!-- Order Window Modal -->
-    <div class="mrcnt-mrg-modal-overlay" id="mrcnt-mrg-orderModalOverlay">
-        <div class="mrcnt-mrg-modal">
-            <div class="mrcnt-mrg-modal-header">
-                <h2 class="mrcnt-mrg-modal-title" id="mrcnt-mrg-orderModalTitle">Buy BTC/USDT</h2>
-                <button class="mrcnt-mrg-modal-close" id="mrcnt-mrg-closeOrderModal">&times;</button>
+        
+        <div class="content">
+            <div class="day-header">✅ Day–1: Sylhet Arrival → White Stone → Waterfall → Sreemangal</div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🕕 6–7 AM</span>
+                    Sylhet পৌঁছানো
+                </div>
+                <div class="details">
+                    <div>ট্রেন থেকে নেমে ফ্রেশ হয়ে নাও</div>
+                    <div class="cost">ব্রেকফাস্ট: ৳60–120</div>
+                </div>
             </div>
-            <div class="mrcnt-mrg-modal-body">
-                <div class="mrcnt-mrg-order-type">
-                    <button class="mrcnt-mrg-order-type-btn mrcnt-mrg-active" id="mrcnt-mrg-marginBtn">Margin</button> 
-                </div>  
+            
+            <div class="location">
+                <div class="location-title">
+                    🟦 1st Spot: Shada Pathor (Bholaganj)
+                </div>
+                <div class="details">
+                    <div><strong>Travel:</strong> Sylhet → Bholaganj (1.5–2 hrs)</div>
+                    <div class="cost">Tuk-tuk (Leguna): ৳100–150 প্রতিজন</div>
+                    <div class="cost">CNG reserve: ৳800–900</div>
+                    <div class="cost">Car reserve: ৳2500–3000</div>
+                    <div class="cost">Entry: ৳20</div>
+                    <div class="cost">Boat Ride: ৩০–৪০ মিনিট, ৳300–400</div>
+                    <div><strong>Stay:</strong> 1.5 hours</div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Margin Modal -->
-    <div class="mrcnt-mrg-modal-overlay" id="mrcnt-mrg-marginModalOverlay">
-        <div class="mrcnt-mrg-modal">
-            <div class="mrcnt-mrg-modal-header">
-                <h2 class="mrcnt-mrg-modal-title">Adjust Max Leverage</h2>
-                <button class="mrcnt-mrg-modal-close" id="mrcnt-mrg-closeMarginModal">&times;</button>
+            
+            <div class="location">
+                <div class="location-title">
+                    🟩 2nd Spot: Pangthumai Waterfall
+                </div>
+                <div class="details">
+                    <div><strong>Travel:</strong> Shada Pathor → Pangthumai (25–30 minutes)</div>
+                    <div>কোনো entry নেই</div>
+                    <div class="cost">Local kids guide চাইলে: ৳50–100</div>
+                    <div><strong>Stay:</strong> 40 minutes</div>
+                </div>
             </div>
-            <div class="mrcnt-mrg-modal-body"> 
-                <div class="mrcnt-mrg-leverage-control">
-                    <div class="mrcnt-mrg-leverage-label">
-                        <span>Max Leverage</span>
-                        <span class="mrcnt-mrg-current-leverage">Current: <span id="mrcnt-mrg-currentLeverage">1.0</span>x</span>
-                    </div>
-
-                    <input type="number" class="mrcnt-mrg-leverage-input" id="mrcnt-mrg-leverageInput" value="" step="0.1" min="0.1" max="1.0">
-
-                    <div class="mrcnt-mrg-container"> 
-                        <div class="mrcnt-mrg-street-container">
-                            <div class="mrcnt-mrg-street-line">
-                                <div class="mrcnt-mrg-selection-indicator" id="mrcnt-mrg-selectionIndicator"></div>
-                            </div>
-                            <div class="mrcnt-mrg-rhombus-container">
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.1"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.1</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.2"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.2</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.3"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.3</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.4"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.4</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.5"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.5</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.6"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.6</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.7"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.7</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.8"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.8</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="0.9"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">0.9</span>
-                                </div>
-                                <div class="mrcnt-mrg-rhombus-wrapper">
-                                    <div class="mrcnt-mrg-rhombus" data-value="1.0"></div>
-                                    <span class="mrcnt-mrg-rhombus-value">1.0</span>
-                                </div>
-                            </div>
-                        </div> 
-                    </div>
-                </div>  
-                <div class="mrcnt-mrg-modal-footer">
-                    <button class="mrcnt-mrg-btn mrcnt-mrg-btn-cancel" id="mrcnt-mrg-cancelMarginBtn">Cancel</button>
-                    <button class="mrcnt-mrg-btn mrcnt-mrg-btn-confirm" id="mrcnt-mrg-confirmMarginBtn">Confirm</button>
+            
+            <div class="location">
+                <div class="location-title">
+                    🟧 3rd Spot: Bisnakandi
+                </div>
+                <div class="details">
+                    <div><strong>Travel:</strong> Pangthumai → Bisnakandi (30–40 minutes)</div>
+                    <div class="cost">Entry: ৳20</div>
+                    <div class="cost">Boat: ৳400–600 (30 min)</div>
+                    <div><strong>Stay:</strong> 1–1.5 hr</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🍽 2:45–3:00 PM</span>
+                    Lunch
+                </div>
+                <div class="details">
+                    <div>Comilla Biriyani House / local restaurants</div>
+                    <div class="cost">Cost: ৳150–250</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🚕 3:30 PM</span>
+                    Sylhet City Return
+                </div>
+                <div class="details">
+                    <div><strong>Travel:</strong> 1.5 hours</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🛣️ 5:00 PM</span>
+                    Sylhet → Sreemangal
+                </div>
+                <div class="details">
+                    <div class="cost">Bus (Hanif/ENA): ৳220–250</div>
+                    <div class="cost">CNG reserve: ৳600–800</div>
+                    <div class="cost">Car reserve: ৳2500</div>
+                    <div><strong>Arrival:</strong> 6:30–7 PM</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    🏨 Sreemangal Night Stay
+                </div>
+                <div class="details">
+                    <div><strong>Budget Hotels:</strong></div>
+                    <div class="cost">• Green Leaf Guest House: ৳1000–1500</div>
+                    <div class="cost">• Sky Park: ৳1000–1400</div>
+                    <div><strong>Mid-range:</strong></div>
+                    <div class="cost">• Tea Heaven: ৳2000–2500</div>
+                    <div class="cost">• Paradise Lodge: ৳2500–3000</div>
+                    <div><strong>Luxury:</strong></div>
+                    <div class="cost">• Grand Sultan: ৳13,000+</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">☕ 7:30 PM</span>
+                    Seven Layer Tea (Nilkantha Tea Cabin)
+                </div>
+                <div class="details">
+                    <div class="cost">Cost: ৳70–100 প্রতি কাপ</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🍽 8:00–9:00 PM</span>
+                    Dinner
+                </div>
+                <div class="details">
+                    <div>Kutum Bari / Bengali Kitchen</div>
+                    <div class="cost">Cost: ৳150–250</div>
+                </div>
+            </div>
+            
+            <div class="day-header">✅ Day–2: Sreemangal Tour → Back</div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🟦 8 AM</span>
+                    Lawachara National Park
+                </div>
+                <div class="details">
+                    <div class="cost">Entry: ৳50</div>
+                    <div class="cost">Guide (optional): ৳300–500</div>
+                    <div><strong>Time:</strong> 1.5 hr trail</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🟩 10:30 AM</span>
+                    Tea Gardens (Kamlapur)
+                </div>
+                <div class="details">
+                    <div class="cost">Entry: Free</div>
+                    <div><strong>Time:</strong> 30–40 min</div>
+                    <div>Drone allowed (most places)</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🟪 11:30 AM</span>
+                    Baikka Beel অথবা Madhabpur Lake (Choose One)
+                </div>
+                <div class="details">
+                    <div><strong>Option A: Baikka Beel</strong></div>
+                    <div>Travel: 30–35 min</div>
+                    <div class="cost">Entry: Free</div>
+                    <div>Time: 45 min</div>
+                    <div style="margin-top: 10px;"><strong>Option B: Madhabpur Lake</strong></div>
+                    <div class="cost">Entry: ৳25</div>
+                    <div>Time: 1 hr</div>
+                    <div>Best for photos</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🍽 1 PM</span>
+                    Lunch
+                </div>
+                <div class="details">
+                    <div>Kutum Bari / Tea Resort Restaurant</div>
+                    <div class="cost">Cost: ৳160–250</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🟧 2:00 PM</span>
+                    Manipuri Para
+                </div>
+                <div class="details">
+                    <div>Travel: 10–15 min</div>
+                    <div class="cost">Entry: Free</div>
+                    <div>Handloom shopping optional</div>
+                </div>
+            </div>
+            
+            <div class="location">
+                <div class="location-title">
+                    <span class="time">🚆 3:30–4:00 PM</span>
+                    Return Journey
+                </div>
+                <div class="details">
+                    <div>Sreemangal → Sylhet (if needed)</div>
+                    <div>অথবা direct home return (train/bus whichever you booked)</div>
+                </div>
+            </div>
+            
+            <div class="budget-section">
+                <div class="budget-title">💰 Total Estimated Budget (Per Person)</div>
+                <table class="budget-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Food (2 days)</td>
+                            <td>৳400–700</td>
+                        </tr>
+                        <tr>
+                            <td>Transport inside Sylhet</td>
+                            <td>৳400–600</td>
+                        </tr>
+                        <tr>
+                            <td>Boat rides</td>
+                            <td>৳700–900</td>
+                        </tr>
+                        <tr>
+                            <td>Sylhet → Sreemangal bus</td>
+                            <td>৳220</td>
+                        </tr>
+                        <tr>
+                            <td>Sreemangal → City transport</td>
+                            <td>৳200–300</td>
+                        </tr>
+                        <tr>
+                            <td>Hotel (1 Night)</td>
+                            <td>৳1200–2000</td>
+                        </tr>
+                        <tr>
+                            <td>Entry Fees</td>
+                            <td>৳150–250</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td><strong>৳3,200 – ৳4,500</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top: 15px; text-align: center; font-weight: 600;">
+                    <div>Couple হলে: ~৳5,000–6,000 total</div>
+                    <div>Car rent নিলে: বাজেট বাড়বে</div>
+                </div>
+            </div>
+            
+            <div class="route-map">
+                <h3>🗺️ Route Map (In Order)</h3>
+                <div class="route-day">
+                    <strong>Day–1:</strong>
+                    Sylhet → Bholaganj (Shada Pathor) → Pangthumai → Bisnakandi → Sylhet → Sreemangal
+                </div>
+                <div class="route-day">
+                    <strong>Day–2:</strong>
+                    Sreemangal hotel → Lawachara → Tea Garden → Baikka Beel/Madhabpur → Manipuri Para → Return
                 </div>
             </div>
         </div>
     </div>
-
-<script>
-$(function () {
-    let mrcntMrgCurrentLeverageValue = 0.1;
-
-    // ==================== Theme Toggle ==================== //
-    $("#mrcnt-mrg-themeToggle").on("click", function () {
-        $("body").toggleClass("mrcnt-mrg-light-mode");
-    });
-
-    // ==================== Open Order Modal ==================== //
-    $("#mrcnt-mrg-buyBtn, #mrcnt-mrg-sellBtn").on("click", function () {
-        const type = this.id === "mrcnt-mrg-buyBtn" ? "Buy" : "Sell";
-        $("#mrcnt-mrg-orderModalTitle").text(`${type} BTC/USDT`);
-        $("#mrcnt-mrg-orderModalOverlay").fadeIn(250);
-    });
-
-    // ==================== Close Order Modal ==================== //
-    $("#mrcnt-mrg-closeOrderModal, #mrcnt-mrg-orderModalOverlay").on("click", function (e) {
-        if (e.target === this || e.target.id === "mrcnt-mrg-closeOrderModal") {
-            $("#mrcnt-mrg-orderModalOverlay").fadeOut(250);
-        }
-    });
-
-    // ==================== Open Margin Modal ==================== //
-    $("#mrcnt-mrg-marginBtn").on("click", function () {
-        $("#mrcnt-mrg-orderModalOverlay").fadeOut(250, function () {
-            $("#mrcnt-mrg-marginModalOverlay").fadeIn(250);
-        });
-    });
-
-    // ==================== Close Margin Modal ==================== //
-    $("#mrcnt-mrg-closeMarginModal, #mrcnt-mrg-cancelMarginBtn, #mrcnt-mrg-marginModalOverlay").on("click", function (e) {
-        if (e.target === this || e.target.id === "mrcnt-mrg-closeMarginModal" || e.target.id === "mrcnt-mrg-cancelMarginBtn") {
-            $("#mrcnt-mrg-marginModalOverlay").fadeOut(250);
-        }
-    });
-
-    // ==================== Confirm Margin ==================== //
-    $("#mrcnt-mrg-confirmMarginBtn").on("click", function () {
-        const leverage = parseFloat($("#mrcnt-mrg-leverageInput").val()) || 0.1;
-        const validLeverage = Math.min(Math.max(leverage, 0.1), 1.0);
-        mrcntMrgCurrentLeverageValue = validLeverage;
-        $("#mrcnt-mrg-currentLeverage").text(validLeverage.toFixed(1));
-        $("#mrcnt-mrg-marginModalOverlay").fadeOut(250, function () {
-            $("#mrcnt-mrg-orderModalOverlay").fadeIn(250);
-        });
-    });
-
-    // ==================== Order Type Button ==================== //
-    $(".mrcnt-mrg-order-type-btn").on("click", function () {
-        $(".mrcnt-mrg-order-type-btn").removeClass("mrcnt-mrg-active");
-        $(this).addClass("mrcnt-mrg-active");
-    });
-
-    // ==================== Leverage Input Change ==================== //
-    $("#mrcnt-mrg-leverageInput").on("input", function () {
-        let value = parseFloat($(this).val());
-        if (isNaN(value)) value = 0.1;
-        value = Math.min(Math.max(value, 0.1), 1.0);
-        value = parseFloat(value.toFixed(1));
-
-        $(this).val(value);
-        mrcntMrgCurrentLeverageValue = value;
-        mrcntMrgUpdateRhombusSelection(value);
-        mrcntMrgShowBorrowAmount(value);
-    });
-
-    // ==================== Rhombus Click ==================== //
-    $(".mrcnt-mrg-rhombus").on("click", function () {
-        const value = parseFloat($(this).data("value"));
-        mrcntMrgCurrentLeverageValue = value;
-        $("#mrcnt-mrg-leverageInput").val(value.toFixed(1));
-        mrcntMrgUpdateRhombusSelection(value);
-        mrcntMrgShowBorrowAmount(value);
-    });
-
-    // ==================== Rhombus Selection Indicator ==================== //
-    function mrcntMrgUpdateRhombusSelection(selectedValue) {
-        const $rhombuses = $(".mrcnt-mrg-rhombus");
-        const $indicator = $("#mrcnt-mrg-selectionIndicator");
-
-        $rhombuses.each(function () {
-            const value = parseFloat($(this).data("value"));
-            const $label = $(this).siblings(".mrcnt-mrg-rhombus-value");
-
-            if (value <= selectedValue) {
-                $(this).addClass("mrcnt-mrg-active");
-                $label.addClass("mrcnt-mrg-active");
-            } else {
-                $(this).removeClass("mrcnt-mrg-active");
-                $label.removeClass("mrcnt-mrg-active");
-            }
-        });
-
-        // Adjust indicator line
-        const $selected = $(`.mrcnt-mrg-rhombus[data-value='${selectedValue.toFixed(1)}']`);
-        if ($selected.length) {
-            const firstLeft = $(".mrcnt-mrg-rhombus").first().offset().left;
-            const selectedLeft = $selected.offset().left;
-            const width = selectedLeft - firstLeft + $selected.outerWidth() / 2;
-
-            $indicator.css({
-                width: width + "px",
-                opacity: 1,
+    
+    <button class="print-btn" id="downloadBtn">🖨️ Download PDF</button>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', downloadPDF);
+        
+        function downloadPDF() {
+            const button = document.getElementById('downloadBtn');
+            const originalText = button.innerHTML;
+            
+            // Show loading state
+            button.innerHTML = '⏳ Generating PDF...';
+            button.disabled = true;
+            
+            const element = document.querySelector('.container');
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: 'Sylhet-Sreemangal-Travel-Plan.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                    scrollY: 0
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+            
+            // Create a clone of the element to avoid affecting the original
+            const elementClone = element.cloneNode(true);
+            
+            // Add a print-specific class to handle any print-specific styling
+            elementClone.classList.add('pdf-export');
+            
+            // Temporarily append the clone to the body for PDF generation
+            document.body.appendChild(elementClone);
+            
+            html2pdf().set(opt).from(elementClone).save().then(() => {
+                // Remove the clone after PDF generation
+                document.body.removeChild(elementClone);
+                
+                // Restore button state
+                button.innerHTML = originalText;
+                button.disabled = false;
+                
+                // Show success message
+                const originalBg = button.style.background;
+                button.style.background = '#38a169';
+                button.innerHTML = '✅ PDF Downloaded!';
+                
+                setTimeout(() => {
+                    button.style.background = originalBg;
+                    button.innerHTML = originalText;
+                }, 2000);
+            }).catch(error => {
+                console.error('PDF generation failed:', error);
+                
+                // Restore button state
+                button.innerHTML = '❌ Failed. Try Again';
+                button.disabled = false;
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+                
+                // Remove the clone if there was an error
+                if (document.body.contains(elementClone)) {
+                    document.body.removeChild(elementClone);
+                }
             });
-        } else {
-            $indicator.css({ opacity: 0 });
         }
-    }
-
-    // ==================== Borrow Amount Console Log ==================== //
-    function mrcntMrgShowBorrowAmount(leverage) {
-        const btc = leverage.toFixed(1);
-        const usdt = (leverage * 100).toFixed(0);
-        console.log(`Borrow Estimation → ${btc} BTC or ${usdt} USDT`);
-    }
-
-    // ==================== Initialize ==================== //
-    $("#mrcnt-mrg-leverageInput").val(mrcntMrgCurrentLeverageValue.toFixed(1));
-    mrcntMrgUpdateRhombusSelection(mrcntMrgCurrentLeverageValue);
-});
-</script>
-
-
+    </script>
 </body>
 </html>

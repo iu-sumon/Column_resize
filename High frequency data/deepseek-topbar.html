@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>JavaScript example</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      .example-wrapper {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      #myGrid {
+        flex: 1;
+        min-height: 0;
+      }
+      .controls {
+        padding: 10px;
+        background: #f5f5f5;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+      .controls button {
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      .controls input {
+        padding: 5px;
+        width: 80px;
+      }
+      .controls label {
+        font-weight: bold;
+      }
+      .status {
+        margin-left: auto;
+        padding: 5px 10px;
+        background: #e0e0e0;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      .progress {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        z-index: 1000;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      }
+      .ag-theme-alpine-dark .ag-header-cell {
+        font-weight: 600;
+      }
+      .ag-theme-alpine-dark .ag-cell {
+        font-size: 12px;
+      }
+    </style>
+    <script src="https://unpkg.com/@ag-grid-enterprise/all-modules@25.3.0/dist/ag-grid-enterprise.min.js"></script>
+  </head>
+  <body>
+    <div class="example-wrapper">
+      <div class="controls">
+        <label for="feeddelay">Feed Delay (ms):</label>
+        <input
+          type="number"
+          id="feeddelay"
+          name="delay"
+          min="10"
+          max="5000"
+          value="500"
+        />
+        <button onclick="startFeed(gridOptions.api);">Start Feed</button>
+        <button onclick="stopFeed();">Stop Feed</button>
+        <button onclick="updateAllRows();">Update All Rows</button>
+        <button onclick="toggleColumnUpdate()">Toggle Column Update</button>
+        <span id="updateStatus" class="status">All Columns Updating</span>
+      </div>
+
+      <div id="myGrid" class="ag-theme-alpine-dark"></div>
+    </div>
+    
+    <script>
+      // Configuration
+      var ROW_COUNT = 600;
+      var COLUMN_COUNT = 200;
+      var UPDATE_BATCH_SIZE = 50;
+      var updateAllColumns = true;
+      
+      // Column width settings
+      var MIN_COLUMN_WIDTH = 120;
+      var MAX_COLUMN_WIDTH = 250;
+      var DEFAULT_COLUMN_WIDTH = 150;
+      
+      // Data arrays
+      var dealTypes = ['Physical', 'Financial', 'Derivative', 'Swap', 'Option'];
+      var bidFlags = ['Buy', 'Sell', 'Hold', 'Short'];
+      var currencies = ['USD', 'EUR', 'GBP', 'JPY', 'CNY', 'AUD', 'CAD'];
+      var regions = ['NA', 'EU', 'APAC', 'EMEA', 'LATAM'];
+      var statuses = ['Active', 'Pending', 'Completed', 'Cancelled', 'Settled'];
+      
+      // Track column definitions
+      var columnDefs = [];
+      var numericColumns = [];
+      var textColumns = [];
+      
+      // Global data
+      var globalRowData = [];
+      var nextTradeId = 100000;
+      var feedInterval;
+
+      // Generate column definitions dynamically
+      function generateColumnDefs() {
+        console.log('Generating ' + COLUMN_COUNT + ' columns...');
+        
+        // Calculate column widths
+        var fixedColumnWidth = Math.max(MIN_COLUMN_WIDTH, 100);
+        var dynamicColumnWidth = Math.max(MIN_COLUMN_WIDTH, DEFAULT_COLUMN_WIDTH);
+        
+        // Fixed columns (always present)
+        var fixedColumns = [
+          {
+            headerName: 'ID',
+            field: 'id',
+            width: fixedColumnWidth,
+            minWidth: MIN_COLUMN_WIDTH,
+            maxWidth: 150,
+            pinned: 'left',
+            cellClass: 'number',
+            valueFormatter: numberCellFormatter,
+            sortable: true,
+            resizable: true,
+            filter: true
+          },
+          {
+            headerName: 'Product',
+            field: 'product',
+            width: Math.max(MIN_COLUMN_WIDTH, 180),
+            minWidth: MIN_COLUMN_WIDTH,
+            maxWidth: 250,
+            pinned: 'left',
+            enableRowGroup: true,
+            enablePivot: true,
+            rowGroupIndex: 0,
+            sortable: true,
+            resizable: true,
+            filter: true
+          },
+          {
+            headerName: 'Trade',
+            field: 'trade',
+            width: fixedColumnWidth,
+            minWidth: MIN_COLUMN_WIDTH,
+            maxWidth: 150,
+            pinned: 'left',
+            cellClass: 'number',
+            valueFormatter: numberCellFormatter,
+            sortable: true,
+            resizable: true,
+            filter: true
+          }
+        ];
+        
+        columnDefs = fixedColumns;
+        
+        // Generate dynamic columns
+        for (var i = 1; i <= COLUMN_COUNT - 3; i++) {
+          var isNumeric = Math.random() > 0.3;
+          var columnName = '';
+          var fieldName = '';
+          
+          // Generate random width within bounds
+          var columnWidth = Math.max(
+            MIN_COLUMN_WIDTH,
+            Math.floor(Math.random() * (MAX_COLUMN_WIDTH - MIN_COLUMN_WIDTH + 1)) + MIN_COLUMN_WIDTH
+          );
+          
+          if (isNumeric) {
+            // Generate numeric column
+            var numericTypes = ['Price', 'Value', 'Amount', 'Volume', 'Quantity', 'Rate', 'Yield', 'Spread', 'Delta', 'Gamma', 'Vega', 'Theta'];
+            var prefixes = ['Current', 'Previous', 'Open', 'Close', 'High', 'Low', 'Bid', 'Ask', 'Mid', 'Avg', 'Max', 'Min'];
+            var columnType = numericTypes[Math.floor(Math.random() * numericTypes.length)];
+            var prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+            
+            columnName = prefix + ' ' + columnType + ' ' + i;
+            fieldName = 'col_' + i;
+            
+            columnDefs.push({
+              headerName: columnName,
+              field: fieldName,
+              width: columnWidth,
+              minWidth: MIN_COLUMN_WIDTH,
+              maxWidth: MAX_COLUMN_WIDTH,
+              aggFunc: 'sum',
+              enableValue: true,
+              cellClass: 'number',
+              valueFormatter: numberCellFormatter,
+              cellRenderer: 'agAnimateShowChangeCellRenderer',
+              filter: 'agNumberColumnFilter',
+              sortable: true,
+              resizable: true,
+              tooltipField: fieldName,
+              tooltipComponentParams: {
+                valueFormatter: numberCellFormatter
+              }
+            });
+            
+            numericColumns.push(fieldName);
+          } else {
+            // Generate text column
+            var textTypes = ['Type', 'Status', 'Currency', 'Region', 'Category', 'Strategy', 'Desk', 'Trader', 'Account', 'Client', 'Sector', 'Industry'];
+            var columnType = textTypes[Math.floor(Math.random() * textTypes.length)];
+            
+            columnName = columnType + ' ' + i;
+            fieldName = 'col_' + i;
+            
+            columnDefs.push({
+              headerName: columnName,
+              field: fieldName,
+              width: columnWidth,
+              minWidth: MIN_COLUMN_WIDTH,
+              maxWidth: MAX_COLUMN_WIDTH,
+              enableRowGroup: true,
+              enablePivot: true,
+              cellRenderer: 'agAnimateShowChangeCellRenderer',
+              filter: 'agTextColumnFilter',
+              sortable: true,
+              resizable: true,
+              tooltipField: fieldName
+            });
+            
+            textColumns.push(fieldName);
+          }
+        }
+        
+        console.log('Generated ' + columnDefs.length + ' columns (' + numericColumns.length + ' numeric, ' + textColumns.length + ' text)');
+        console.log('All columns have minimum width: ' + MIN_COLUMN_WIDTH + 'px');
+        return columnDefs;
+      }
+
+      // Generate product names
+      function generateProducts(count) {
+        var products = [];
+        var categories = ['Oil', 'Gas', 'Metal', 'Grain', 'Bond', 'Stock', 'Currency', 'Index', 'Commodity', 'Future', 'Option', 'Swap'];
+        var descriptors = ['Crude', 'Light', 'Sweet', 'Heavy', 'Premium', 'Standard', 'Global', 'Local', 'Asian', 'European', 'American', 'Emerging'];
+        var suffixes = ['Futures', 'Options', 'Swap', 'Forward', 'Spot', 'Contract', 'ETF', 'Derivative', 'Certificate'];
+        
+        for (var i = 0; i < count; i++) {
+          var category = categories[Math.floor(Math.random() * categories.length)];
+          var descriptor = descriptors[Math.floor(Math.random() * descriptors.length)];
+          var suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+          var productCode = 'P' + ('000' + (i + 1)).slice(-3) + Math.floor(Math.random() * 90 + 10);
+          
+          products.push(descriptor + ' ' + category + ' ' + suffix + ' ' + productCode);
+        }
+        
+        return products;
+      }
+
+      // Generate row data
+      function generateRowData() {
+        console.log('Generating ' + ROW_COUNT + ' rows...');
+        globalRowData = [];
+        
+        var products = generateProducts(100); // 100 unique products
+        
+        // Create progress indicator
+        var progressDiv = document.createElement('div');
+        progressDiv.className = 'progress';
+        progressDiv.id = 'progressIndicator';
+        document.body.appendChild(progressDiv);
+        
+        var processedRows = 0;
+        
+        function processBatch() {
+          var batchSize = 50;
+          var endRow = Math.min(processedRows + batchSize, ROW_COUNT);
+          
+          for (var i = processedRows; i < endRow; i++) {
+            var row = generateRow(i + 1, products);
+            globalRowData.push(row);
+            processedRows++;
+          }
+          
+          // Update progress
+          progressDiv.textContent = 'Generating rows: ' + processedRows + ' / ' + ROW_COUNT;
+          
+          if (processedRows < ROW_COUNT) {
+            setTimeout(processBatch, 10);
+          } else {
+            progressDiv.textContent = 'Data generation complete! ' + ROW_COUNT + ' rows with ' + COLUMN_COUNT + ' columns';
+            console.log('Generated ' + globalRowData.length + ' rows');
+            
+            // Remove progress indicator after 3 seconds
+            setTimeout(function() {
+              document.body.removeChild(progressDiv);
+            }, 3000);
+          }
+        }
+        
+        processBatch();
+      }
+
+      // Generate a single row
+      function generateRow(rowId, products) {
+        var row = {
+          id: rowId,
+          product: products[Math.floor(Math.random() * products.length)],
+          trade: nextTradeId++
+        };
+        
+        // Generate data for all dynamic columns
+        for (var i = 1; i <= COLUMN_COUNT - 3; i++) {
+          var fieldName = 'col_' + i;
+          var isNumericColumn = numericColumns.includes(fieldName);
+          
+          if (isNumericColumn) {
+            // Generate numeric value with realistic financial ranges
+            var baseValue = Math.random() * 10000;
+            var sign = Math.random() > 0.5 ? 1 : -1;
+            row[fieldName] = sign * baseValue * (Math.random() * 10 + 1);
+          } else {
+            // Generate text value based on column type
+            var columnName = columnDefs.find(col => col.field === fieldName)?.headerName || '';
+            
+            if (columnName.includes('Type')) {
+              row[fieldName] = dealTypes[Math.floor(Math.random() * dealTypes.length)];
+            } else if (columnName.includes('Status')) {
+              row[fieldName] = statuses[Math.floor(Math.random() * statuses.length)];
+            } else if (columnName.includes('Currency')) {
+              row[fieldName] = currencies[Math.floor(Math.random() * currencies.length)];
+            } else if (columnName.includes('Region')) {
+              row[fieldName] = regions[Math.floor(Math.random() * regions.length)];
+            } else if (columnName.includes('Category')) {
+              row[fieldName] = ['Hedge', 'Speculative', 'Arbitrage', 'Market Making'][Math.floor(Math.random() * 4)];
+            } else if (columnName.includes('Sector')) {
+              row[fieldName] = ['Energy', 'Financial', 'Technology', 'Healthcare', 'Consumer'][Math.floor(Math.random() * 5)];
+            } else {
+              // Default text value
+              var textOptions = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Value', 'Growth', 'Momentum', 'Quality', 'Core', 'Tactical'];
+              row[fieldName] = textOptions[Math.floor(Math.random() * textOptions.length)];
+            }
+          }
+        }
+        
+        return row;
+      }
+
+      // Update all rows with new data
+      function updateAllRows() {
+        if (!globalRowData.length) return;
+        
+        console.log('Updating all ' + globalRowData.length + ' rows...');
+        
+        var updatedRows = [];
+        for (var i = 0; i < globalRowData.length; i++) {
+          var newRow = updateRowData(globalRowData[i]);
+          globalRowData[i] = newRow;
+          updatedRows.push(newRow);
+        }
+        
+        gridOptions.api.applyTransactionAsync({ update: updatedRows }, function() {
+          console.log('Updated all rows');
+        });
+      }
+
+      // Update a single row's data
+      function updateRowData(row) {
+        var newRow = Object.assign({}, row);
+        
+        // Update numeric columns
+        numericColumns.forEach(function(field) {
+          var changePercent = (Math.random() - 0.5) * 0.2; // ±10% change
+          newRow[field] = row[field] * (1 + changePercent);
+          
+          // Occasionally add large spikes
+          if (Math.random() > 0.9) {
+            newRow[field] *= (Math.random() > 0.5 ? 1.5 : 0.5);
+          }
+        });
+        
+        // Update text columns (if updating all columns)
+        if (updateAllColumns) {
+          textColumns.forEach(function(field) {
+            var columnName = columnDefs.find(col => col.field === field)?.headerName || '';
+            
+            // 20% chance to change text values
+            if (Math.random() > 0.8) {
+              if (columnName.includes('Type')) {
+                newRow[field] = dealTypes[Math.floor(Math.random() * dealTypes.length)];
+              } else if (columnName.includes('Status')) {
+                newRow[field] = statuses[Math.floor(Math.random() * statuses.length)];
+              } else if (columnName.includes('Currency')) {
+                newRow[field] = currencies[Math.floor(Math.random() * currencies.length)];
+              } else if (columnName.includes('Region')) {
+                newRow[field] = regions[Math.floor(Math.random() * regions.length)];
+              } else {
+                var textOptions = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Value', 'Growth', 'Momentum', 'Quality'];
+                newRow[field] = textOptions[Math.floor(Math.random() * textOptions.length)];
+              }
+            }
+          });
+        }
+        
+        return newRow;
+      }
+
+      // Toggle between updating all columns vs just numeric columns
+      function toggleColumnUpdate() {
+        updateAllColumns = !updateAllColumns;
+        var statusElement = document.getElementById('updateStatus');
+        if (statusElement) {
+          statusElement.textContent = updateAllColumns ? 'All Columns Updating' : 'Numeric Columns Only';
+          statusElement.style.background = updateAllColumns ? '#d4edda' : '#f8d7da';
+        }
+        console.log('Column update mode:', updateAllColumns ? 'All columns' : 'Numeric only');
+      }
+
+      // Start the data feed
+      function startFeed(api) {
+        stopFeed();
+        
+        var delay = 500;
+        try {
+          delay = parseInt(document.getElementById('feeddelay').value) || 500;
+        } catch (ex) {}
+        
+        console.log('Starting feed with delay:', delay, 'ms');
+        
+        feedInterval = setInterval(function() {
+          var updates = [];
+          var updatedIndexes = new Set();
+          
+          // Update random rows
+          for (var i = 0; i < UPDATE_BATCH_SIZE; i++) {
+            var randomIndex;
+            do {
+              randomIndex = Math.floor(Math.random() * globalRowData.length);
+            } while (updatedIndexes.has(randomIndex));
+            
+            updatedIndexes.add(randomIndex);
+            
+            var oldRow = globalRowData[randomIndex];
+            var newRow = updateRowData(oldRow);
+            globalRowData[randomIndex] = newRow;
+            updates.push(newRow);
+          }
+          
+          // Apply updates
+          api.applyTransactionAsync({ update: updates }, function() {
+            console.log('Updated ' + updates.length + ' rows');
+          });
+        }, delay);
+      }
+
+      // Stop the data feed
+      function stopFeed() {
+        if (feedInterval) {
+          clearInterval(feedInterval);
+          feedInterval = null;
+          console.log('Feed stopped');
+        }
+      }
+
+      // Number formatter
+      function numberCellFormatter(params) {
+        if (params.value == null) return '';
+        var num = parseFloat(params.value);
+        if (isNaN(num)) return '';
+        
+        // Format with commas and 2 decimal places
+        return num.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      // Grid options
+      var gridOptions = {
+        columnDefs: [],
+        rowData: [],
+        defaultColDef: {
+          width: DEFAULT_COLUMN_WIDTH,
+          minWidth: MIN_COLUMN_WIDTH,
+          maxWidth: MAX_COLUMN_WIDTH,
+          sortable: true,
+          resizable: true,
+          filter: true,
+          floatingFilter: true,
+          tooltipComponent: 'agTooltipComponent',
+          cellStyle: { fontSize: '12px' }
+        },
+        animateRows: true,
+        rowSelection: 'multiple',
+        suppressRowClickSelection: true,
+        suppressAggFuncInHeader: true,
+        rowGroupPanelShow: 'always',
+        pivotPanelShow: 'always',
+        enableRangeSelection: true,
+        enableCharts: true,
+        getRowNodeId: function(data) {
+          return data.trade.toString();
+        },
+        sideBar: {
+          toolPanels: [
+            {
+              id: 'columns',
+              labelDefault: 'Columns',
+              labelKey: 'columns',
+              iconKey: 'columns',
+              toolPanel: 'agColumnsToolPanel',
+              toolPanelParams: {
+                suppressRowGroups: false,
+                suppressValues: false,
+                suppressPivots: false,
+                suppressPivotMode: false,
+                suppressColumnFilter: false,
+                suppressColumnSelectAll: false,
+                suppressColumnExpandAll: false
+              }
+            },
+            {
+              id: 'filters',
+              labelDefault: 'Filters',
+              labelKey: 'filters',
+              iconKey: 'filter',
+              toolPanel: 'agFiltersToolPanel'
+            }
+          ],
+          position: 'right'
+        },
+        onGridReady: function(params) {
+          console.log('Grid ready, generating columns...');
+          
+          // Generate columns
+          var columns = generateColumnDefs();
+          params.api.setColumnDefs(columns);
+          
+          // Generate data
+          generateRowData();
+          
+          // Set data once generated
+          var checkDataInterval = setInterval(function() {
+            if (globalRowData.length === ROW_COUNT) {
+              clearInterval(checkDataInterval);
+              console.log('Setting row data...');
+              params.api.setRowData(globalRowData);
+              console.log('Grid initialization complete');
+              
+              // Auto-size columns to fit content, respecting min width
+              setTimeout(function() {
+                params.api.sizeColumnsToFit();
+              }, 100);
+            }
+          }, 100);
+        },
+        onFirstDataRendered: function(params) {
+          // Size columns to fit, but respect min width
+          params.api.sizeColumnsToFit();
+        },
+        onGridSizeChanged: function(params) {
+          // Auto-size columns when grid size changes
+          params.api.sizeColumnsToFit();
+        },
+        onAsyncTransactionsFlushed: function(e) {
+          console.log('Applied ' + e.results.length + ' transactions');
+        }
+      };
+
+      // Initialize grid
+      document.addEventListener('DOMContentLoaded', function() {
+        var gridDiv = document.querySelector('#myGrid');
+        new agGrid.Grid(gridDiv, gridOptions);
+      });
+    </script>
+  </body>
+</html>
