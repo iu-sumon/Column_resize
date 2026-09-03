@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Holdings</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<style>
+  :root{
+    --page-bg:#0b0d12;
+    --card-bg:#0d1017;
+    --border:#2e7de8;
+    --row-line:#1c212c;
+    --head-text:#9aa3b5;
+    --group-text:#c7cddb;
+    --cell-text:#e4e7ee;
+    --name-text:#eef0f5;
+    --profit:#23c99e;
+    --loss:#f2666e;
+    --total-text:#4c8dff;
+    --total-label:#9aa3b5;
+    --font:'Segoe UI', Roboto, -apple-system, Helvetica, Arial, sans-serif;
+  }
+  html[data-theme="light"]{
+    --page-bg:#eef1f6;
+    --card-bg:#ffffff;
+    --border:#2e7de8;
+    --row-line:#e7eaf1;
+    --head-text:#6b7280;
+    --group-text:#3a4152;
+    --cell-text:#2c3140;
+    --name-text:#1a1e29;
+    --profit:#12a37b;
+    --loss:#df3f47;
+    --total-text:#2f6be0;
+    --total-label:#6b7280;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--page-bg);
+    font-family:var(--font);
+    padding:40px 20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    transition:background .3s ease;
+  }
+
+  .toolbar{
+    width:100%;
+    max-width:1160px;
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:14px;
+  }
+  .theme-toggle{
+    display:flex;align-items:center;gap:8px;
+    background:transparent;border:1px solid var(--row-line);color:var(--head-text);
+    padding:6px 12px;border-radius:20px;cursor:pointer;font-size:12.5px;
+    font-family:var(--font);
+  }
+  .theme-toggle svg{width:14px;height:14px;}
+  .theme-toggle:hover{border-color:var(--border);color:var(--group-text);}
+
+  .table-card{
+    width:100%;
+    max-width:1160px;
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:6px;
+    overflow-x:auto;
+  }
+
+  table{
+    border-collapse:collapse;
+    width:100%;
+    min-width:1000px;
+  }
+
+  thead th{
+    font-weight:400;
+    font-size:13.5px;
+    color:var(--head-text);
+    padding:14px 18px;
+    text-align:center;
+    white-space:nowrap;
+    border:1px solid var(--row-line);
+  }
+  thead tr.group-row th{
+    padding-bottom:8px;
+  }
+  thead tr.sub-row th{
+    padding-top:0;
+    padding-bottom:14px;
+  }
+  thead th.col-instrument{
+    text-align:left;
+  }
+
+  tbody td, tfoot td{
+    padding:14px 18px;
+    font-size:13.5px;
+    color:var(--cell-text);
+    text-align:right;
+    white-space:nowrap;
+    border:1px solid var(--row-line);
+  }
+  tbody td.col-instrument, tfoot td.col-instrument{
+    text-align:left;
+    color:var(--name-text);
+  }
+
+  tbody tr:hover td{
+    background:rgba(255,255,255,0.015);
+  }
+  html[data-theme="light"] tbody tr:hover td{
+    background:rgba(0,0,0,0.015);
+  }
+
+  .pl.pos{color:var(--profit);}
+  .pl.neg{color:var(--loss);}
+  .pl.zero{color:var(--cell-text);}
+
+  tfoot td{
+    font-weight:600;
+    color:var(--total-text);
+  }
+  tfoot td.col-instrument{
+    color:var(--total-label);
+    font-weight:600;
+  }
+  tfoot td.pl.pos{color:var(--profit);}
+  tfoot td.pl.neg{color:var(--loss);}
+</style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button class="theme-toggle" id="themeToggle">
+      <svg id="toggleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+      <span id="toggleLabel">Dark mode</span>
+    </button>
+  </div>
+
+  <div class="table-card">
+    <table id="holdingsTable">
+      <thead>
+        <tr class="group-row">
+          <th></th>
+          <th colspan="2">Opening</th>
+          <th colspan="2">Buy/Receive</th>
+          <th colspan="2">Total</th>
+          <th colspan="3">Sell/Delivery</th>
+          <th></th>
+        </tr>
+        <tr class="sub-row">
+          <th class="col-instrument">Instrument</th>
+          <th>Quantity</th>
+          <th>Cost Amount</th>
+          <th>Quantity</th>
+          <th>Cost Amount</th>
+          <th>Quantity</th>
+          <th>Cost Amount</th>
+          <th>Quantity</th>
+          <th>Cost Amount</th>
+          <th>Sell Amount</th>
+          <th>Profit/Loss</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+      <tfoot id="tableFoot"></tfoot>
+    </table>
+  </div>
+
+<script>
+$(function(){
+
+  var raw = [
+    { instrument:"SAIFPOWER",  openQty:1250, openCost:26302.50, buyQty:2059, buyCost:25001.50, sellQty:3309, sellCost:51304.06, sellAmt:23446.91 },
+    { instrument:"SPCERAMICS", openQty:0,    openCost:0,        buyQty:856,  buyCost:13799.75, sellQty:856,  sellCost:13799.71, sellAmt:14052.24 },
+    { instrument:"PTL",        openQty:0,    openCost:0,        buyQty:233,  buyCost:9956.17,  sellQty:233,  sellCost:9956.18,  sellAmt:11766.22 },
+    { instrument:"MALEKSPIN",  openQty:0,    openCost:0,        buyQty:806,  buyCost:27029.35, sellQty:89,   sellCost:2687.97,  sellAmt:2789.01 },
+    { instrument:"MAKSONSPIN", openQty:0,    openCost:0,        buyQty:1975, buyCost:12071.60, sellQty:1975, sellCost:12071.60, sellAmt:12517.42 },
+    { instrument:"LOVELLO",    openQty:0,    openCost:0,        buyQty:290,  buyCost:27419.73, sellQty:290,  sellCost:27419.73, sellAmt:29868.14 },
+    { instrument:"JAMUNABANK", openQty:0,    openCost:0,        buyQty:1000, buyCost:21142.20, sellQty:1000, sellCost:21142.20, sellAmt:21357.20 },
+    { instrument:"FINEFOODS",  openQty:0,    openCost:0,        buyQty:100,  buyCost:28256.40, sellQty:100,  sellCost:28256.40, sellAmt:30638.60 },
+    { instrument:"BSCPLC",     openQty:0,    openCost:0,        buyQty:51,   buyCost:6921.82,  sellQty:0,    sellCost:0,        sellAmt:0 }
+  ];
+
+  var data = raw.map(function(r){
+    var totalQty  = r.openQty + r.buyQty;
+    var totalCost = r.openCost + r.buyCost;
+    var pl = r.sellAmt - r.sellCost;
+    return $.extend({}, r, { totalQty:totalQty, totalCost:totalCost, pl:pl });
+  });
+
+  var fmt = function(n){
+    return Number(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  };
+  var fmtInt = function(n){ return Number(n).toLocaleString('en-US'); };
+  var plClass = function(v){ return v > 0 ? 'pos' : (v < 0 ? 'neg' : 'zero'); };
+  var signed = function(n){ return (n < 0 ? '-' : '') + fmt(Math.abs(n)); };
+
+  function render(){
+    var $body = $('#tableBody').empty();
+    var $foot = $('#tableFoot').empty();
+
+    data.forEach(function(r){
+      $body.append(
+        '<tr>' +
+          '<td class="col-instrument">'+r.instrument+'</td>' +
+          '<td>'+fmtInt(r.openQty)+'</td>' +
+          '<td>'+fmt(r.openCost)+'</td>' +
+          '<td>'+fmtInt(r.buyQty)+'</td>' +
+          '<td>'+fmt(r.buyCost)+'</td>' +
+          '<td>'+fmtInt(r.totalQty)+'</td>' +
+          '<td>'+fmt(r.totalCost)+'</td>' +
+          '<td>'+fmtInt(r.sellQty)+'</td>' +
+          '<td>'+fmt(r.sellCost)+'</td>' +
+          '<td>'+fmt(r.sellAmt)+'</td>' +
+          '<td class="pl '+plClass(r.pl)+'">'+signed(r.pl)+'</td>' +
+        '</tr>'
+      );
+    });
+
+    var t = data.reduce(function(a,r){
+      a.openQty+=r.openQty; a.openCost+=r.openCost;
+      a.buyQty+=r.buyQty; a.buyCost+=r.buyCost;
+      a.totalQty+=r.totalQty; a.totalCost+=r.totalCost;
+      a.sellQty+=r.sellQty; a.sellCost+=r.sellCost;
+      a.sellAmt+=r.sellAmt; a.pl+=r.pl;
+      return a;
+    }, {openQty:0,openCost:0,buyQty:0,buyCost:0,totalQty:0,totalCost:0,sellQty:0,sellCost:0,sellAmt:0,pl:0});
+
+    $foot.append(
+      '<tr>' +
+        '<td class="col-instrument">Total</td>' +
+        '<td>'+fmtInt(t.openQty)+'</td>' +
+        '<td>'+fmt(t.openCost)+'</td>' +
+        '<td>'+fmtInt(t.buyQty)+'</td>' +
+        '<td>'+fmt(t.buyCost)+'</td>' +
+        '<td>'+fmtInt(t.totalQty)+'</td>' +
+        '<td>'+fmt(t.totalCost)+'</td>' +
+        '<td>'+fmtInt(t.sellQty)+'</td>' +
+        '<td>'+fmt(t.sellCost)+'</td>' +
+        '<td>'+fmt(t.sellAmt)+'</td>' +
+        '<td class="pl '+plClass(t.pl)+'">'+signed(t.pl)+'</td>' +
+      '</tr>'
+    );
+  }
+  render();
+
+  /* theme toggle */
+  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = prefersDark ? 'dark' : 'light';
+
+  function applyTheme(t){
+    theme = t;
+    document.documentElement.setAttribute('data-theme', t);
+    $('#toggleLabel').text(t === 'dark' ? 'Dark mode' : 'Light mode');
+    $('#toggleIcon').html(
+      t === 'dark'
+        ? '<path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/>'
+        : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+    );
+  }
+  applyTheme(theme);
+
+  $('#themeToggle').on('click', function(){
+    applyTheme(theme === 'dark' ? 'light' : 'dark');
+  });
+
+});
+</script>
+</body>
+</html>

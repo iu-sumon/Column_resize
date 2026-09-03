@@ -1,326 +1,169 @@
-var exchange = 'All';
-var ITEMS_PER_PAGE = 10;
-var news_filter = '';
-
-$(document).ready(function() {
-    let storedFontSize = localStorage.getItem(`${system_username}_${pid}_news_font`) || 'system';
-    changenewsFontSize(storedFontSize);
-    $('#fontSize_news').find(`input[value="${storedFontSize}"]`).prop('checked', true);
-
-    //Symbol-News Hide
-    $("#announcement-content").hide();
-    market_news();
-    symbol_input();
+//Initialize function on Page Load
+$(document).ready(function () {
+  initStatistics();
 });
 
-// Function to change font size
-function changenewsFontSize(fontSize) { 
-    let mkt_news_content = $("#mkt-news-content"); 
-    mkt_news_content.removeClass('font-size-extra-large-body font-size-large-body font-size-normal-body font-size-small-body font-size-extra-small-body font-size-xxs-small-body');
-   
-    // Add font size classes based on the selected font size
-    switch (fontSize) {
-        case 'extra-large': 
-            mkt_news_content.addClass('font-size-extra-large-body');
-            break;
-        case 'large': 
-            mkt_news_content.addClass('font-size-large-body');
-            break;
-        case 'system': 
-            let customFont = localStorage.getItem("customFont") || '0.80';
-            let customWeight = localStorage.getItem("customWeight") || 500;
-            mkt_news_content.css({ "font-size": customFont + 'rem', "font-weight": customWeight });
-            break;
-        case 'normal': 
-            mkt_news_content.addClass('font-size-normal-body');
-            break;
-        case 'small': 
-            mkt_news_content.addClass('font-size-small-body');
-            break;
-        case 'extra-small': 
-            mkt_news_content.addClass('font-size-extra-small-body');
-            break;
-        case 'xxs-small': 
-            mkt_news_content.addClass('font-size-xxs-small-body');
-            break;
-        default:
-            break;
-    }
 
-    // Save font size to localStorage
-    localStorage.setItem(`${system_username}_${pid}_news_font`, fontSize);
-};
 
-// Event listener for radio buttons
- $(document).on('change', '.news-font-group input[type="radio"]', function() {
-    let fontSize = $(this).val(); 
-    changenewsFontSize(fontSize);
+// Data
+var clientData = [
+    { type: "Retail", buy: 88.72, sell: 87.60, total: 88.16 },
+    { type: "Institution", buy: 8.82, sell: 8.46, total: 8.64 },
+    { type: "Dealer", buy: 1.20, sell: 1.65, total: 1.43 },
+    { type: "Foreign", buy: 0.08, sell: 1.29, total: 0.69 },
+    { type: "Others", buy: 1.18, sell: 1.00, total: 1.08 }
+];
+
+var categoryData = [
+  { code: "A", name: "Category", trades: 2669850, value: 3322.48, pct: 52.64, color: "var(--stat-cat-a)" },
+  { code: "B", name: "Category", trades: 670950,  value: 834.96,  pct: 13.23, color: "var(--stat-cat-b)" },
+  { code: "D", name: "Category", trades: 210300,  value: 262.1,   pct: 4.15,  color: "var(--stat-cat-d)" },
+  { code: "N", name: "Category", trades: 972450,  value: 1210.16, pct: 19.17, color: "var(--stat-cat-n)" },
+  { code: "P", name: "Category", trades: 95200,   value: 118.35,  pct: 1.88,  color: "var(--stat-cat-p)" },
+  { code: "S", name: "Category", trades: 154800,  value: 192.6,   pct: 3.05,  color: "var(--stat-cat-s)" },
+  { code: "X", name: "Category", trades: 62100,   value: 77.2,    pct: 1.22,  color: "var(--stat-cat-x)" },
+  { code: "Y", name: "Category", trades: 48950,   value: 60.85,   pct: 0.97,  color: "var(--stat-cat-y)" },
+  { code: "Z", name: "Category", trades: 186750,  value: 232.4,   pct: 3.68,  color: "var(--stat-cat-z)" },
+];
+
+var charts = {};
+var currentMode = "client";
+var formatNumber = value => value.toLocaleString("en-US");
+
+function resolveVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function renderClientTable() {
+  var rowsEl = document.getElementById("statClientRows");
+  if (!rowsEl) return;
+
+  var maxBuy = Math.max(...clientData.map(item => item.buy));
+
+  rowsEl.innerHTML = clientData.map((item, index) => {
+    var width = ((item.buy / maxBuy) * 100).toFixed(1);
+    return `
+      <div class="stat-client-row ${index === 0 ? "stat-top" : ""}">
+        <div class="stat-bar-fill" style="width:${width}%"></div>
+        <div class="stat-client-name">${item.type}</div>
+        <div class="stat-client-buy">${item.buy.toFixed(2)}%</div>
+        <div class="stat-client-sell">${item.sell.toFixed(2)}%</div>
+        <div class="stat-client-total">${item.total.toFixed(2)}%</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderCategoryTable() {
+  var rowsEl = document.getElementById("statCategoryRows");
+  if (!rowsEl) return;
+
+  var totalTrade = categoryData.reduce((s, c) => s + c.trades, 0);
+  var totalValue = categoryData.reduce((s, c) => s + c.value, 0);
+  var totalPct = categoryData.reduce((s, c) => s + c.pct, 0);
+
+  document.getElementById("statTotalTrade").textContent = formatNumber(totalTrade);
+  document.getElementById("statTotalValue").textContent = totalValue.toFixed(2);
+  document.getElementById("statTotalPct").textContent = totalPct.toFixed(2) + "%";
+
+  rowsEl.innerHTML = categoryData.map(item => `
+    <tr>
+      <td>${item.code}</td>
+      <td>${formatNumber(item.trades)}</td>
+      <td>${item.value.toFixed(2)}</td>
+      <td>${item.pct.toFixed(2)}%</td>
+    </tr>
+  `).join("");
+}
+
+// Pie Chart
+function drawDonut(chartId) {
+  var el = document.getElementById(chartId);
+  if (!el) return;
+  if (charts[chartId]) {
+    charts[chartId].dispose();
+  }
+  var chart = echarts.init(el);
+  charts[chartId] = chart;
+
+  var data = categoryData;
+
+  chart.setOption({
+    tooltip: {
+      trigger: "item",
+      formatter: (p) => `${p.name}: ${p.percent}%`,
+    },
+    series: [
+      {
+        type: "pie",
+        radius: ["45%", "85%"],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderColor: resolveVar("--stat-bg-panel"),
+          borderWidth: 3,
+          borderRadius: 8,
+        },
+        label: {
+          show: true,
+          position: "inside",
+          color: "#fff",
+          fontWeight: 700,
+          fontSize: 11,
+          formatter: (p) => p.name.replace("Category ", ""),
+        },
+        labelLine: { show: false },
+        data: data.map((c) => ({
+          name: c.code,
+          value: c.trades,
+          itemStyle: {
+            color: resolveVar(c.color.replace("var(", "").replace(")", "")),
+            borderRadius: 8,
+          },
+        })),
+      },
+    ],
+  });
+}
+
+// View switching between Client Statistics / Category Statistics
+function switchStatMode(mode) {
+  if (mode === currentMode) return;
+  currentMode = mode;
+
+  var clientBtn = document.getElementById("client_statistics");
+  var categoryBtn = document.getElementById("category_statistics");
+  var clientView = document.getElementById("statClientView");
+  var categoryView = document.getElementById("statCategoryView");
+  var cateExchange = document.getElementById("exchange_statistics");
+
+  if (mode === "client") {
+    clientBtn.classList.add("sub-menu-btn-active");
+    categoryBtn.classList.remove("sub-menu-btn-active");
+    clientView.style.display = "";
+    categoryView.style.display = "none";
+    cateExchange.style.display = "none";
+  } else {
+    categoryBtn.classList.add("sub-menu-btn-active");
+    clientBtn.classList.remove("sub-menu-btn-active");
+    categoryView.style.display = "";
+    cateExchange.style.display = "";
+    clientView.style.display = "none"; 
+    renderCategoryTable();
+    drawDonut("statCategoryDonut");
+  }
+}
+
+function initStatistics() {
+  renderClientTable();
+  document.getElementById("client_statistics").addEventListener("click", () => switchStatMode("client"));
+  document.getElementById("category_statistics").addEventListener("click", () => switchStatMode("category"));
+}
+
+$("#exchange_statistics").on("change", function () {
+  const exchange = $(this).val();
+  console.log(exchange);
 });
 
-// Handle news type selection
-$('#news_selector').change(function() {
-    const selectedValue = $(this).val();
- 
-    // Hide all content sections first
-    $('#mkt-news-content, #announcement-content').hide();
-    
-    switch(selectedValue) {
-        case 'mkt_news': 
-            $('#mkt-news-content').show(); 
-            $('#news_sym_filter').show();
-            $('#exchange_news').show();
-            market_news();
-            break;   
-        case 'announcement': 
-            $('#announcement-content').show();
-            $('#news_sym_filter').hide();
-            $('#exchange_news').hide();
-            fetch_announcement();
-            break;
-    }
+window.addEventListener("resize", () => {
+  Object.values(charts).forEach(chart => chart.resize());
 });
-
-$('#exchange_news').change(function(e){
-    exchange = $(this).val(); 
-    if ($('#mkt-news-content').length > 0 && $('#mkt-news-content').is(":visible")) {
-        market_news();
-    }
-});
-
-function market_news(page=1, ticker=null){
-    var newsDiv = document.querySelector("#accordion_today_news");
-    newsDiv.innerHTML = "";
-
-    // Hide pagination button immediately
-    $("#news_pagination").addClass('news_pagination_hide');
-
-    $.get("/shared/getnews/", { 
-            inst:ticker, 
-            page: page, 
-            limit: ITEMS_PER_PAGE, 
-            search: news_filter, 
-            exchange: exchange,
-        }, function (response) { 
-        if (response?.data.items.length > 0) {   
-            realTimeNewsIndex = response?.data.items.length; 
-            for (i = 0; i < response?.data.items.length; i++) {
-                const data = response?.data.items; 
-                const news_title = data[i].news_title; 
-                const news_text = data[i].news_text;
-                const news_type = data[i].news_type;
-                const news_url = data[i].news_url;
-                const exchange = data[i].exchange;
-                const news_ref = data[i].news_ref;
-                const news_date = data[i].news_date;
-                const last_update_string = formatDateTime(data[i].last_update);
-
-                var accordionItem = document.createElement("div");
-                accordionItem.classList.add("accordion-item");
-
-                accordionItem.innerHTML = `
-                    <div class="accordion-header text-overflow-ellipsis" id="today_heading${i}">
-                        <div class="d-flex justify-content-between align-items-center" onclick="toggleAccordionToday(this)">
-                            <h2 class="mb-0 accordion-header-h2">
-                                <span class="accordion-header-icon"><i class="fa fa-chevron-right toggle-chevron-today"></i></span>
-                                <button class="btn btn-link text-left today-news-btn custom-btn pl-0 collapsed" 
-                                        type="button" 
-                                        aria-expanded="false" 
-                                        aria-controls="today_collapse${i}">
-                                    <b class="d-none current_news_symbol">${news_ref}</b>
-                                    ${news_title}
-                                    <br>
-                                    <span style="margin-left: 2px; font-size: 13px;">${exchange}</span>
-                                    <span style="margin-left: 5px; color: #3B61EB;">${news_type}</span>
-                                </button>
-                            </h2>
-                            <div class="mt-2 mr-2 text-right">
-                                <p class="m-0" style="font-size: 14px;">${last_update_string}</p>
-                                <p class="m-0" style="font-size: 14px;">${news_date}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="today_collapse${i}" 
-                        class="accordion-collapse collapse" 
-                        aria-labelledby="today_heading${i}">
-                        <div class="accordion-body accordion-text-body">
-                            ${news_text} ${(news_url ? ` Ref-<a href="${news_url}" target="_blank">${news_url}</a>` : '')}
-                        </div>
-                    </div>
-                `; 
-                newsDiv.appendChild(accordionItem); 
-            } 
-
-             // Now show pagination after data is fully added
-             $("#news_pagination").removeClass('news_pagination_hide');
-            
-            /// Generate pagination
-            let selector = '#pagination_news';
-            let limit_selector = '#news_limit';
-            let total_record_selector = '#news_record';
-            const paginationData = {
-                page:response.data.page,
-                pages:response.data.pages,
-                per_page:response.data.per_page,
-                total:response.data.total_items
-            }
-            generateCommonPagination(paginationData, market_news, selector, limit_selector, total_record_selector);
-
-        } else { 
-            $("#news_pagination").addClass('news_pagination_hide');
-        }
-    });
-}
-
-function toggleAccordionToday(clickedDiv) {
-    // Find the button element within the clicked div
-    const button = clickedDiv.querySelector('button[aria-controls]');
-    const icon = clickedDiv.querySelector('.toggle-chevron-today');
-    const collapseId = button.getAttribute('aria-controls');
-    const collapseElement = document.getElementById(collapseId);
-    const accordionItem = clickedDiv.closest('.accordion-item');
-    const isExpanded = button.getAttribute('aria-expanded') === 'true';
-
-    // Close all other accordion items first
-    document.querySelectorAll('.accordion-item').forEach(item => {
-        if (item !== accordionItem) {
-            const otherDiv = item.querySelector('.d-flex');
-            const otherButton = otherDiv.querySelector('button[aria-controls]');
-            const otherCollapseId = otherButton.getAttribute('aria-controls');
-            const otherCollapse = document.getElementById(otherCollapseId);
-            const otherIcon = otherDiv.querySelector('.toggle-chevron-today');
-
-            otherButton.setAttribute('aria-expanded', 'false');
-            otherCollapse.classList.remove('show');
-            otherIcon.classList.remove('fa-chevron-down');
-            otherIcon.classList.add('fa-chevron-right');
-            item.querySelector('.accordion-header').style.borderRadius = '8px';
-        }
-    });
-
-    // Toggle the clicked accordion
-    if (isExpanded) {
-        // Close it
-        button.setAttribute('aria-expanded', 'false');
-        collapseElement.classList.remove('show');
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-right');
-        accordionItem.querySelector('.accordion-header').style.borderRadius = '8px';
-    } else {
-        // Open it
-        button.setAttribute('aria-expanded', 'true');
-        collapseElement.classList.add('show');
-        icon.classList.remove('fa-chevron-right');
-        icon.classList.add('fa-chevron-down');
-        accordionItem.querySelector('.accordion-header').style.borderRadius = '8px 8px 0px 0px';
-    }
-}
-
-$('#news_key_filter').keyup(function(event) {
-    if (event.key === 'Enter' || event.keyCode === 13) {
-        news_filter = $(this).val();
-        if ($('#mkt-news-content').length > 0 && $('#mkt-news-content').is(":visible")) {
-            market_news();
-        }
-        if ($('#announcement-content').length > 0 && $('#announcement-content').is(":visible")) {
-            fetch_announcement();
-        }
-    }
-});
-
-function clear_news_filter(){
-    news_filter = '';
-    $('#news_key_filter').val('');
-    $('#news_sym_filter').val('');
-
-    if ($('#mkt-news-content').length > 0 && $('#mkt-news-content').is(":visible")) {
-        market_news();
-    }
-    if ($('#announcement-content').length > 0 && $('#announcement-content').is(":visible")) {
-        fetch_announcement();
-    }
-}
-
-function fetch_announcement(page=1) {
-    $.get('announcement/list', { search: news_filter, user: system_username, page: page, limit: ITEMS_PER_PAGE }, function (response) {
-        let announcementDiv = document.querySelector("#announcement-content");
-        announcementDiv.innerHTML = "";
-        if (response.data?.items.length > 0) {
-            $("#news_pagination").removeClass('news_pagination_hide');
-
-            let accordion = document.createElement("div");
-            accordion.classList.add("accordion");
-            accordion.id = "accordionExampleAnnounce";
-            realTimeAnnounceIndex = response.data?.items.length;
-
-            for (i = 0; i < response.data?.items.length; i++) {
-                const record = response.data?.items[i];
-                const announcement_title = record.title;
-                const announcement_text = record.text;
-                const last_update_string = record.created_at;
-
-                let accordionItem = document.createElement("div");
-                accordionItem.classList.add("accordion-item");
-
-                let accordionHeader = document.createElement("div");
-                accordionHeader.classList.add("accordion-header", "text-overflow-ellipsis");
-                accordionHeader.id = `announce_heading${i}`;
-
-                let buttonClass = i === 0 ? "" : "collapsed";
-
-                accordionHeader.innerHTML = `
-                    <h2 class="mb-0 accordion-header-h2" onclick="toggleAccordionToday(this)">
-                        <span class="accordion-header-icon"><i class="fa fa-chevron-right toggle-chevron-today"></i></span>
-                        <button class="btn btn-link today-news-btn custom-btn pl-0 ${buttonClass}" type="button" aria-expanded="${i === 1 ? 'true' : 'false'}" aria-controls="collapse${i}">
-                            ${announcement_title}
-                            <br>
-                            <span style="font-size: 14px;">${last_update_string}</span>
-                        </button>
-                    </h2>
-                `;
-
-                accordionHeader.setAttribute("data-toggle", "collapse");
-                accordionHeader.setAttribute("data-target", `#announce_collapse${i}`);
-
-                let accordionCollapse = document.createElement("div");
-                accordionCollapse.id = `announce_collapse${i}`;
-                let collapseClasses = i === 0 ? "collapse" : "collapse"; // Initial accordion item is expanded
-                accordionCollapse.classList.add(collapseClasses, "accordion-body", "accordion-text-body-today");
-
-                accordionCollapse.setAttribute("aria-labelledby", `announce_heading${i}`);
-                accordionCollapse.setAttribute("data-parent", "#accordionExampleAnnounce");
-
-                accordionCollapse.innerHTML = `${announcement_text}`;
-
-                accordionItem.appendChild(accordionHeader);
-                accordionItem.appendChild(accordionCollapse);
-                accordion.appendChild(accordionItem);
-
-            }  
-            announcementDiv.appendChild(accordion); 
-
-            // Generate pagination
-            let selector = '#pagination_news';
-            let limit_selector = '#news_limit';
-            let total_record_selector = '#news_record';
-            const paginationData = {
-                page:response.data.page,
-                pages:response.data.pages,
-                per_page:response.data.per_page,
-                total:response.data.total_items
-            }
-            generateCommonPagination(paginationData, fetch_announcement, selector, limit_selector, total_record_selector);
-        } else {
-            $("#news_pagination").addClass('news_pagination_hide');
-        }
-    });
-}
-
-function set_updated_news_limit(selectedValue) { 
-    ITEMS_PER_PAGE = selectedValue;
-    if ($('#mkt-news-content').length > 0 && $('#mkt-news-content').is(":visible")) {
-        market_news();
-    }
-    if ($('#announcement-content').length > 0 && $('#announcement-content').is(":visible")) {
-        fetch_announcement();
-    }
-}
